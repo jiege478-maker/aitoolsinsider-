@@ -14,8 +14,6 @@
       steps:
         - name: Checkout repo
           uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
 
         - name: Setup Node.js
           uses: actions/setup-node@v4
@@ -26,16 +24,11 @@
           env:
             DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           run: |
-            echo "Checking DEEPSEEK_API_KEY..."
             if [ -z "$DEEPSEEK_API_KEY" ]; then
-              echo "ERROR: DEEPSEEK_API_KEY secret is not set!"
+              echo "ERROR: DEEPSEEK_API_KEY secret not set"
               exit 1
             fi
             node generate-articles-ai.js
-
-        - name: Update sitemap lastmod
-          run: |
-            sed -i "s|<lastmod>.*</lastmod>|<lastmod>$(date +%Y-%m-%d)</lastmod>|" sitemap.xml
 
         - name: Commit and push
           run: |
@@ -43,5 +36,4 @@
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add -A
             git diff --staged --quiet || git commit -m "Daily article update $(date +%Y-%m-%d)"
-            git pull --rebase origin main
-            git push
+            git push -f origin main
