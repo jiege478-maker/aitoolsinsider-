@@ -1,60 +1,84 @@
 // Mobile nav toggle
 document.addEventListener('DOMContentLoaded', function() {
   const toggle = document.querySelector('.nav-toggle');
-  const navLinks = document.querySelector('.nav-links');
-  if (toggle && navLinks) {
+  const nav = document.querySelector('.nav');
+  if (toggle && nav) {
     toggle.addEventListener('click', function() {
-      navLinks.classList.toggle('open');
+      nav.classList.toggle('open');
     });
-    // Close nav on link click
-    navLinks.querySelectorAll('a').forEach(function(link) {
+    nav.querySelectorAll('a').forEach(function(link) {
       link.addEventListener('click', function() {
-        navLinks.classList.remove('open');
+        nav.classList.remove('open');
       });
     });
   }
 
-  // Scroll to top button
-  var scrollBtn = document.querySelector('.scroll-top');
+  // Scroll to top
+  const scrollBtn = document.querySelector('.scroll-top');
   if (scrollBtn) {
     window.addEventListener('scroll', function() {
-      if (window.scrollY > 400) {
-        scrollBtn.classList.add('visible');
-      } else {
-        scrollBtn.classList.remove('visible');
-      }
+      scrollBtn.classList.toggle('visible', window.scrollY > 400);
     });
     scrollBtn.addEventListener('click', function() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
-  // Table wrapper for responsive tables
-  document.querySelectorAll('.article-body table').forEach(function(table) {
-    var wrapper = document.createElement('div');
-    wrapper.className = 'table-wrap';
-    table.parentNode.insertBefore(wrapper, table);
-    wrapper.appendChild(table);
-  });
-
-  // Copy link to headline
-  document.querySelectorAll('.article-body h2, .article-body h3').forEach(function(heading) {
-    if (heading.id) {
-      heading.style.cursor = 'pointer';
-      heading.addEventListener('click', function() {
-        var url = window.location.href.split('#')[0] + '#' + this.id;
-        navigator.clipboard.writeText(url).then(function() {
-          // brief visual feedback
-          var orig = this.style.color;
-          this.style.color = '#2563eb';
-          setTimeout(function() {
-            this.style.color = orig;
-          }.bind(this), 600);
-        }.bind(this));
-      });
+  // Active nav link
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.nav a').forEach(function(link) {
+    const href = link.getAttribute('href');
+    if (href === currentPath || (href !== '/' && currentPath.startsWith(href))) {
+      link.classList.add('active');
     }
   });
-});
 
-// Google AdSense - replace with your publisher ID
-window.adsbygoogle = window.adsbygoogle || [];
+  // Category filtering on homepage
+  var filterLinks = document.querySelectorAll('.nav a[data-filter]');
+  var articles = document.querySelectorAll('.post-card');
+
+  if (filterLinks.length > 0 && articles.length > 0) {
+    filterLinks.forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var filter = this.getAttribute('data-filter');
+
+        filterLinks.forEach(function(l) { l.classList.remove('active'); });
+        this.classList.add('active');
+
+        articles.forEach(function(article) {
+          if (filter === 'all') {
+            article.style.display = '';
+            return;
+          }
+          var tag = article.getAttribute('data-tag');
+          var topics = article.getAttribute('data-topics') || '';
+          var match = false;
+          if (filter === 'comparisons' && tag === 'comparison') match = true;
+          else if (topics.split(',').indexOf(filter) !== -1) match = true;
+          article.style.display = match ? '' : 'none';
+        });
+
+        // Scroll to posts section
+        var postsSection = document.querySelector('.posts');
+        if (postsSection) {
+          var y = postsSection.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Reset filter when clicking the site logo
+    var logo = document.querySelector('.logo');
+    if (logo) {
+      logo.addEventListener('click', function() {
+        setTimeout(function() {
+          filterLinks.forEach(function(l) { l.classList.remove('active'); });
+          var homeLink = document.querySelector('.nav a[data-filter="all"]');
+          if (homeLink) homeLink.classList.add('active');
+          articles.forEach(function(a) { a.style.display = ''; });
+        }, 50);
+      });
+    }
+  }
+});
