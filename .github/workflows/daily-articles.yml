@@ -4,7 +4,7 @@ on:
   schedule:
     # Run daily at 06:00 UTC (14:00 Beijing time)
     - cron: '7 6 * * *'
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -21,14 +21,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Generate articles
-        run: node generate-articles.js
+      - name: Generate articles with AI
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: node generate-articles-ai.js
 
-      - name: Update sitemap (if needed)
+      - name: Update sitemap lastmod
         run: |
-          # Update lastmod for homepage in sitemap
           sed -i "s|<lastmod>.*</lastmod>|<lastmod>$(date +%Y-%m-%d)</lastmod>|" sitemap.xml
-        shell: bash
 
       - name: Commit and push
         run: |
