@@ -173,11 +173,11 @@ const template = (a) => `<!DOCTYPE html>
   <title>${a.title}</title>
   <meta name="description" content="${a.desc}">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://aitoolsinsider.com/articles/${a.slug}.html">
+  <link rel="canonical" href="https://toolrankly.com/articles/${a.slug}.html">
   <meta property="og:type" content="article">
   <meta property="og:title" content="${a.title}">
   <meta property="og:description" content="${a.desc}">
-  <meta property="og:url" content="https://aitoolsinsider.com/articles/${a.slug}.html">
+  <meta property="og:url" content="https://toolrankly.com/articles/${a.slug}.html">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${a.title}">
   <meta name="twitter:description" content="${a.desc}">
