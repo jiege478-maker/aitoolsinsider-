@@ -1,5 +1,14 @@
-// Mobile nav toggle
 document.addEventListener('DOMContentLoaded', function() {
+  // Reading progress bar
+  const bar = document.getElementById('progressBar');
+  if (bar) {
+    window.addEventListener('scroll', function() {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      if (h > 0) bar.style.width = Math.min(100, (window.scrollY / h) * 100) + '%';
+    });
+  }
+
+  // Mobile nav toggle
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('.nav');
   if (toggle && nav) {

@@ -216,6 +216,35 @@ img { max-width: 100%; height: auto; }
 .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; text-align: center; }
 .footer-bottom p { font-size: 13px; color: var(--text-muted); }
 
+/* ===== PROGRESS BAR (reading progress) ===== */
+.progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: var(--primary); z-index: 200;
+  width: 0%; transition: width 0.1s linear;
+}
+
+/* ===== FAQ ITEMS ===== */
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+.faq-item h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.faq-item p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
 /* ===== SCROLL TOP ===== */
 .scroll-top {
   position: fixed; bottom: 24px; right: 24px; width: 40px; height: 40px;
