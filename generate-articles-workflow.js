@@ -32,7 +32,7 @@ const MODEL = 'deepseek-v4-flash';
 const TODAY = new Date().toISOString().split('T')[0];
 
 // How many articles to generate each run
-const ARTICLES_PER_RUN = 10;
+const ARTICLES_PER_RUN = 5;
 
 // ========== EXISTING CONTENT INDEX ==========
 // Read existing slugs so the AI doesn't duplicate topics
