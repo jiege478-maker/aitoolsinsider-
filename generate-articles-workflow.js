@@ -495,7 +495,8 @@ function buildArticleHTML(a) {
   </script>${a.faqSchema}${a.howToSchema || ''}${a.productSchema || ''}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional"></noscript>
   <link rel="stylesheet" href="/css/style.css">
   <meta name="google-site-verification" content="r4pFlorufSq6sd0fLjcuxarji5jBk8XcaBzNj2oQvjk">
   <meta name="google-adsense-account" content="ca-pub-8856252621654174">
@@ -634,7 +635,7 @@ ${a.related.map(r => {
   </div>
 </footer>
 <button class="scroll-top" aria-label="Scroll to top">↑</button>
-<script src="/js/script.js"></script>
+<script defer src="/js/script.js"></script>
 </body>
 </html>`;
 }
@@ -651,7 +652,7 @@ function cardHTML(a) {
         <p class="post-excerpt">${a.desc}</p>
         <div class="post-footer">
           <span class="read-time">${a.readTime} read</span>
-          <a href="/articles/${a.slug}.html">Read →</a>
+          <a href="/articles/${a.slug}.html" aria-label="Read ${a.title}">Read →</a>
         </div>
       </article>`;
 }

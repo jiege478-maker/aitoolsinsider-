@@ -4,7 +4,7 @@
   --bg-soft: #f8fafc;
   --text: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --border: #e2e8f0;
   --border-light: #f1f5f9;
   --primary: #2563eb;
@@ -85,11 +85,12 @@ img { max-width: 100%; height: auto; }
 .hero p { font-size: 17px; color: var(--text-secondary); line-height: 1.7; max-width: 640px; margin: 0 auto; position: relative; }
 
 /* ===== AD UNITS ===== */
-.ad-container { text-align: center; overflow: hidden; min-height: 90px; }
-.ad-container--leaderboard { margin: 32px 0; }
-.ad-container--in-feed { margin: 8px 0; grid-column: 1 / -1; min-height: 90px; }
-.ad-container--in-content { min-height: 250px; margin: 32px 0; }
-.ad-container--sidebar { min-height: 250px; margin: 0 0 24px; }
+.ad-container { text-align: center; overflow: hidden; }
+.ad-container--leaderboard { min-height: 100px; margin: 32px 0; }
+.ad-container--in-feed { margin: 8px 0; grid-column: 1 / -1; min-height: 100px; }
+.ad-container--in-content { min-height: 280px; margin: 32px 0; }
+.ad-container--sidebar { min-height: 280px; margin: 0 0 24px; }
+.ad-container--footer { min-height: 100px; margin: 24px 0; text-align: center; }
 .ad-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 
 /* ===== POSTS GRID ===== */
