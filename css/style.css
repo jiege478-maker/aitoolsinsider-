@@ -368,4 +368,96 @@ img { max-width: 100%; height: auto; }
   .footer-inner { grid-template-columns: 1fr; }
   .post-card { padding: 16px; }
   .post-excerpt { -webkit-line-clamp: 2; }
+  .consent-banner-actions { flex-direction: column; }
+  .consent-btn { width: 100%; text-align: center; }
 }
+
+/* ===== CONSENT BANNER ===== */
+#consent-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999999;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  padding: 20px 24px;
+}
+#consent-banner[style*="translateY(0)"] {
+  /* animation handled by JS */;
+}
+.consent-banner-content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+.consent-banner-text strong {
+  font-size: 15px;
+  display: block;
+  margin-bottom: 6px;
+}
+.consent-banner-text p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+.consent-banner-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.consent-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.consent-btn:hover { border-color: var(--primary); color: var(--primary); }
+.consent-btn--accept {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.consent-btn--accept:hover { opacity: 0.9; color: #fff; }
+.consent-btn--reject { color: var(--text-muted); }
+.consent-btn--reject:hover { border-color: #ef4444; color: #ef4444; }
+.consent-details {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.consent-toggle {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.consent-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+.consent-toggle input:disabled {
+  opacity: 0.5;
+}
+.consent-banner-footer {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.consent-banner-footer a { color: var(--text-muted); }
