@@ -468,18 +468,28 @@ function buildArticleHTML(a) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${a.title}">
   <meta name="twitter:description" content="${a.desc}">
+  <meta property="og:image" content="${SITE_URL}/images/og-default.svg">
+  <meta name="twitter:image" content="${SITE_URL}/images/og-default.svg">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": ${JSON.stringify(a.title)},
     "description": ${JSON.stringify(a.desc)},
+    "image": {
+      "@type": "ImageObject",
+      "url": "${SITE_URL}/images/og-default.svg",
+      "width": 1200,
+      "height": 630
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "${SITE_URL}/articles/${a.slug}.html"
+    },
     "author": { "@type": "Organization", "name": "${SITE_NAME}", "url": "${SITE_URL}" },
     "datePublished": "${a.date}",
     "dateModified": "${a.date}",
-    "publisher": { "@type": "Organization", "name": "${SITE_NAME}", "url": "${SITE_URL}" },
-    "mainEntityOfPage": { "@type": "WebPage", "@id": "${SITE_URL}/articles/${a.slug}.html" },
-    "image": "${SITE_URL}/images/og-default.png"
+    "publisher": { "@type": "Organization", "name": "${SITE_NAME}", "url": "${SITE_URL}" }
   }
   </script>
   <script type="application/ld+json">

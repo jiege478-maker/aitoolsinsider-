@@ -524,16 +524,39 @@ const template = (a) => `<!DOCTYPE html>
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${a.title}">
   <meta name="twitter:description" content="${a.desc}">
+  <meta property="og:image" content="https://toolrankly.com/images/og-default.svg">
+  <meta name="twitter:image" content="https://toolrankly.com/images/og-default.svg">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "${a.title}",
     "description": "${a.desc}",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://toolrankly.com/images/og-default.svg",
+      "width": 1200,
+      "height": 630
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://toolrankly.com/articles/${a.slug}.html"
+    },
     "author": { "@type": "Organization", "name": "AI Tools Insider" },
     "datePublished": "${a.date}",
     "dateModified": "${a.date}",
     "publisher": { "@type": "Organization", "name": "AI Tools Insider" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://toolrankly.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Articles", "item": "https://toolrankly.com/" },
+      { "@type": "ListItem", "position": 3, "name": "${a.title}", "item": "https://toolrankly.com/articles/${a.slug}.html" }
+    ]
   }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
