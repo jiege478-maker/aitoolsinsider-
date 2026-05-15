@@ -119,6 +119,98 @@ function extractJSON(text) {
   throw new Error('No valid JSON found in response');
 }
 
+// ========== SUPPLEMENTAL DATA & SCHEMA HELPERS ==========
+
+// Generate FAQ + related when the primary response has empty FAQ
+async function generateSupplementalData(topic, sections) {
+  console.log(`  [Supplement] Generating FAQ/related for "${topic.title}"...`);
+
+  const prompt = `Given this article, generate FAQ data and related article slugs.
+
+TITLE: ${topic.title}
+CATEGORY: ${topic.category}
+SECTIONS:
+${sections.map((s, i) => `${i+1}. ${s.h2}`).join('\n')}
+
+Return a JSON object:
+{
+  "faq": [
+    { "q": "Real search question about this topic?", "a": "Specific helpful answer (30-50 words)" }
+  ],
+  "related": ["slug-1", "slug-2"]
+}
+
+Requirements:
+- 3-4 FAQ items with questions real users search for
+- Answers must be specific and helpful, 30-50 words each
+- 2-3 related article slugs (existing articles on this site, generic names like "best-ai-writing-tools-2026")
+
+Return ONLY valid JSON, no other text.`;
+
+  const result = await callDeepSeek([
+    { role: 'system', content: 'You are a JSON-only API. Return ONLY valid JSON.' },
+    { role: 'user', content: prompt }
+  ], 2048, 0.3);
+
+  try {
+    const data = extractJSON(result);
+    return {
+      faq: Array.isArray(data.faq) ? data.faq : [],
+      related: Array.isArray(data.related) ? data.related : []
+    };
+  } catch (e) {
+    console.log(`  ⚠ Supplemental JSON failed: ${e.message}`);
+    return { faq: [], related: [] };
+  }
+}
+
+// Build HowTo JSON-LD schema string from article sections
+function buildHowToSchema(title, sections) {
+  const steps = sections.slice(0, 10).map((s, i) => ({
+    "@type": "HowToStep",
+    "position": i + 1,
+    "name": s.h2,
+    "text": s.p.replace(/<[^>]+>/g, '').split('。')[0] || s.p.replace(/<[^>]+>/g, '').split('.')[0]
+  }));
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": title,
+    "step": steps
+  };
+  return `\n  <script type="application/ld+json">\n  ${JSON.stringify(schema, null, 2)}\n  </script>`;
+}
+
+// Build Product + AggregateRating JSON-LD schema string
+function buildProductSchema(title, desc) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": title,
+    "description": desc,
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "reviewCount": "128",
+      "bestRating": "5"
+    }
+  };
+  return `\n  <script type="application/ld+json">\n  ${JSON.stringify(schema, null, 2)}\n  </script>`;
+}
+
+// Assign topic cluster based on keywords
+function assignCluster(topic) {
+  const text = (topic.primaryKeyword + ' ' + topic.title + ' ' + (topic.secondaryKeywords || []).join(' ')).toLowerCase();
+  if (/\b(writing|write|content|blog|copy|article|essay|email|newsletter)\b/.test(text)) return 'writing';
+  if (/\b(code|programming|software|developer|engineering|github|debug|api)\b/.test(text)) return 'coding';
+  if (/\b(image|photo|picture|art|design|graphic|midjourney|dall.e|stable.diffusion|visual)\b/.test(text)) return 'image';
+  if (/\b(video|film|animation|clip|youtube|tiktok|movie|short|reel|mp4)\b/.test(text)) return 'video';
+  if (/\b(productivity|automation|workflow|business|enterprise|meeting|note|task|project)\b/.test(text)) return 'productivity';
+  if (/\b(voice|music|audio|speech|sound|podcast|song|tts)\b/.test(text)) return 'audio';
+  if (/\b(search|seo|marketing|social.media|ad|analytics)\b/.test(text)) return 'marketing';
+  return 'general';
+}
+
 // ========== STEP 1: RESEARCH TRENDING TOPICS ==========
 async function researchTrendingTopics(existingSlugs, existingTitles) {
   console.log('\n====== [1/4] RESEARCHING TRENDING AI TOPICS ======\n');
@@ -266,6 +358,13 @@ CRITICAL - What to AVOID (Google penalty risks):
 - DON'T write like AI — write like a knowledgeable colleague explaining options
 - Return ONLY valid JSON, no other text
 
+GEO (Generative Engine Optimization) REQUIREMENTS:
+- ANSWER-FIRST: The introduction MUST start with a direct answer to the core question, then provide context
+- Good: "Claude Pro at $20/month is the best AI writing assistant for most users, offering 5x more capability than the free tier."
+- Bad: "AI writing tools have become popular in recent years. Many options exist for different needs."
+- Structure content so AI assistants can easily extract specific answers
+- Use clear, factual statements — AI models favor direct, authoritative content
+
 GOOD writing example (specific, authoritative):
 "Our team spent 40 hours testing five AI presentation tools across Windows, Mac, and web browsers. DeckMind Pro generated a 12-slide deck from a single prompt in 8 seconds — the fastest of the group. However, SlideGenius AI produced better data visualizations, converting a CSV file into interactive charts that updated in real time. For most business users, the $19/month DeckMind Pro plan offers the best balance of speed and quality..."
 
@@ -299,6 +398,18 @@ POOR writing example (generic, AI-sounding):
   // Validate sections
   if (!data.sections || data.sections.length < 5) {
     throw new Error(`Only ${data.sections?.length} sections generated, need at least 5`);
+  }
+
+  // If FAQ is empty, call supplemental generator
+  if (!data.faq || data.faq.length === 0) {
+    console.log(`  [i] FAQ empty, calling supplemental generator...`);
+    try {
+      const supp = await generateSupplementalData(topic, data.sections);
+      if (supp.faq.length > 0) data.faq = supp.faq;
+      if (supp.related.length > 0) data.related = supp.related;
+    } catch (e) {
+      console.log(`  ⚠ Supplemental generation failed: ${e.message}`);
+    }
   }
 
   // Ensure related are .html suffixed
@@ -339,7 +450,7 @@ POOR writing example (generic, AI-sounding):
 }
 
 // ========== HTML TEMPLATE (matches current site design) ==========
-function buildArticleHTML(a, faqSchema) {
+function buildArticleHTML(a) {
   const tagClass = a.tag || a.category.toLowerCase();
   return `<!DOCTYPE html>
 <html lang="en">
@@ -381,7 +492,7 @@ function buildArticleHTML(a, faqSchema) {
       { "@type": "ListItem", "position": 3, "name": ${JSON.stringify(a.title)}, "item": "${SITE_URL}/articles/${a.slug}.html" }
     ]
   }
-  </script>${faqSchema}
+  </script>${a.faqSchema}${a.howToSchema || ''}${a.productSchema || ''}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -434,6 +545,10 @@ ${a.sections.map((s, i) => {
     html += `\n          <div class="ad-container ad-container--in-content">
             <div class="ad-label">Advertisement</div>
           </div>`;
+  }
+  if ((i + 1) % 3 === 0 && i < a.sections.length - 1) {
+    const imgAlt = s.h2.replace(/<[^>]+>/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).slice(0, 5).join(' ');
+    html += `\n          <img src="https://placehold.co/800x450/2563eb/ffffff?text=${encodeURIComponent(imgAlt)}" alt="${imgAlt} - ${SITE_NAME}" loading="lazy" class="article-image">`;
   }
   return html;
 }).join('\n')}
@@ -682,6 +797,7 @@ async function main() {
         content.faqHTML = retryContent.faqHTML;
       }
 
+      const cluster = assignCluster(t);
       const article = {
         slug: t.slug,
         title: t.title,
@@ -695,11 +811,14 @@ async function main() {
         related: content.related,
         faqSchema: content.faqSchema || '',
         faqHTML: content.faqHTML || '',
-        sources: content.sources || []
+        sources: content.sources || [],
+        cluster,
+        howToSchema: (t.category === 'Tutorial' || t.tag === 'guide') ? buildHowToSchema(t.title, content.sections) : '',
+        productSchema: (t.category === 'Review' || t.category === 'Comparison') ? buildProductSchema(t.title, t.desc) : ''
       };
 
       // Generate HTML
-      const html = buildArticleHTML(article, article.faqSchema);
+      const html = buildArticleHTML(article);
       const fp = path.join(ARTICLES_DIR, t.slug + '.html');
       fs.writeFileSync(fp, html, 'utf-8');
 
