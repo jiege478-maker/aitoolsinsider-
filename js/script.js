@@ -156,28 +156,27 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (searchInput) {
     const isHomepage = !!document.getElementById('featuredGrid');
     const searchForm = document.getElementById('searchForm');
+
+    // Shared filter function
+    function applySearchFilter() {
+      const term = searchInput.value.toLowerCase().trim();
+      const filtered = term ? allArticles.filter(a =>
+        a.title.toLowerCase().includes(term) ||
+        (a.description && a.description.toLowerCase().includes(term)) ||
+        (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+      ) : allArticles;
+      renderAllArticles(filtered);
+    }
+
     if (isHomepage) {
-      // Homepage: real-time filtering as user types
-      searchInput.addEventListener('input', function() {
-        const term = this.value.toLowerCase().trim();
-        const filtered = term ? allArticles.filter(a =>
-          a.title.toLowerCase().includes(term) ||
-          (a.description && a.description.toLowerCase().includes(term)) ||
-          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-        ) : allArticles;
-        renderAllArticles(filtered);
-      });
-      // Homepage: intercept form submit to prevent page navigation
+      // Real-time filtering: input + keyup events (broader compatibility)
+      searchInput.addEventListener('input', applySearchFilter);
+      searchInput.addEventListener('keyup', applySearchFilter);
+      // Intercept form submit to prevent page navigation
       if (searchForm) {
         searchForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          const term = searchInput.value.toLowerCase().trim();
-          const filtered = term ? allArticles.filter(a =>
-            a.title.toLowerCase().includes(term) ||
-            (a.description && a.description.toLowerCase().includes(term)) ||
-            (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-          ) : allArticles;
-          renderAllArticles(filtered);
+          applySearchFilter();
         });
       }
     }
