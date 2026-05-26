@@ -16,12 +16,35 @@ const RssParser = require('rss-parser');
 const { chromium } = require('playwright');
 
 // ============================================================
+// LOAD .ENV FILE
+// ============================================================
+
+const envFile = path.join(__dirname, '.env');
+if (fs.existsSync(envFile)) {
+  const envContent = fs.readFileSync(envFile, 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    const key = trimmed.substring(0, eqIdx).trim();
+    const val = trimmed.substring(eqIdx + 1).trim();
+    if (!process.env[key]) process.env[key] = val;
+  }
+}
+
+// ============================================================
 // CONFIGURATION
 // ============================================================
 
-const SUPABASE_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTgxMzU4NiwiZXhwIjoyMDk1Mzg5NTg2fQ.Z9V0aHGsrRQjgb4C1F3V4WzfTpGlJUgA34OKI3U09bc';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://hgnphmvjijvhgrjnepno.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+
+if (!SUPABASE_SERVICE_KEY) {
+  console.error('ERROR: SUPABASE_SERVICE_KEY not set. Create a .env file or set environment variable.');
+  process.exit(1);
+}
 
 const DRY_RUN = process.env.DRY_RUN === 'true';
 const MAX_ARTICLES = parseInt(process.env.LIMIT || '10', 10);
