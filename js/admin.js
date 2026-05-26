@@ -269,13 +269,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // ===== Init =====
   if (loginScreen) {
-    await loadCategories();
-    var session = await sbGetSession();
-    if (session) {
-      showDashboard(session.user ? session.user.email : 'Admin');
-      loadArticles();
-    } else {
-      showLogin();
-    }
+    try { await loadCategories(); } catch (e) { console.error('loadCategories failed:', e); }
+    try {
+      var session = await sbGetSession();
+      if (session) {
+        showDashboard(session.user ? session.user.email : 'Admin');
+        loadArticles();
+        return;
+      }
+    } catch (e) { console.error('session check failed:', e); }
+    showLogin();
   }
 });
