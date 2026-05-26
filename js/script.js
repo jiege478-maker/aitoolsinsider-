@@ -129,9 +129,31 @@ document.addEventListener('DOMContentLoaded', async function() {
   const noResults = document.getElementById('noResults');
   const searchInput = document.getElementById('searchInput');
 
+  // Search data — accessible on all pages
+  let allArticles = [];
+
+  function renderAllArticles(articles) {
+    if (!allArticlesGrid) return;
+    if (articles.length === 0) {
+      allArticlesGrid.innerHTML = '';
+      if (noResults) noResults.style.display = 'block';
+      if (articleCount) articleCount.textContent = '0 articles';
+      return;
+    }
+    if (noResults) noResults.style.display = 'none';
+    if (articleCount) articleCount.textContent = articles.length + ' articles';
+    // Remove duplicates by id
+    const seen = new Set();
+    const unique = articles.filter(a => {
+      if (seen.has(a.id)) return false;
+      seen.add(a.id);
+      return true;
+    });
+    allArticlesGrid.innerHTML = unique.map(a => createArticleCard(a, false)).join('');
+  }
+
   if (featuredGrid) {
     // Homepage — load data
-    let allArticles = [];
     let categories = [];
     let currentFilterCategory = null;
 
@@ -185,19 +207,17 @@ document.addEventListener('DOMContentLoaded', async function() {
       // All articles grid
       renderAllArticles(allArticles);
 
-      // Search
-      if (searchInput) {
-        searchInput.addEventListener('input', function() {
-          const term = this.value.toLowerCase().trim();
-          const filtered = term ? allArticles.filter(a =>
-            a.title.toLowerCase().includes(term) ||
-            (a.description && a.description.toLowerCase().includes(term)) ||
-            (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-          ) : allArticles;
-          renderAllArticles(filtered);
-        });
-
-        // Trending tags removed
+      // URL search query on page load (e.g. from article page search)
+      const searchQuery = urlParams.get('s');
+      if (searchQuery && searchInput) {
+        searchInput.value = searchQuery;
+        const term = searchQuery.toLowerCase().trim();
+        const filtered = term ? allArticles.filter(a =>
+          a.title.toLowerCase().includes(term) ||
+          (a.description && a.description.toLowerCase().includes(term)) ||
+          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+        ) : allArticles;
+        renderAllArticles(filtered);
       }
     } catch (e) {
       console.error('Failed to load data:', e);
@@ -207,26 +227,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // All sections populate progressively as data loads
-
-    function renderAllArticles(articles) {
-      if (!allArticlesGrid) return;
-      if (articles.length === 0) {
-        allArticlesGrid.innerHTML = '';
-        if (noResults) noResults.style.display = 'block';
-        if (articleCount) articleCount.textContent = '0 articles';
-        return;
-      }
-      if (noResults) noResults.style.display = 'none';
-      if (articleCount) articleCount.textContent = articles.length + ' articles';
-      // Remove duplicates by id
-      const seen = new Set();
-      const unique = articles.filter(a => {
-        if (seen.has(a.id)) return false;
-        seen.add(a.id);
-        return true;
-      });
-      allArticlesGrid.innerHTML = unique.map(a => createArticleCard(a, false)).join('');
-    }
   }
 
   // ===== ARTICLE PAGE LOGIC =====
@@ -343,6 +343,33 @@ document.addEventListener('DOMContentLoaded', async function() {
         articleTitle.textContent = 'Error loading article';
         document.getElementById('articleBody').innerHTML = '<p>Failed to load the article. Please try again later.</p>';
       }
+    }
+  }
+
+  // ===== Global search =====
+  if (searchInput) {
+    const isHomepage = !!document.getElementById('featuredGrid');
+    if (isHomepage) {
+      // Homepage: real-time filtering as user types
+      searchInput.addEventListener('input', function() {
+        const term = this.value.toLowerCase().trim();
+        const filtered = term ? allArticles.filter(a =>
+          a.title.toLowerCase().includes(term) ||
+          (a.description && a.description.toLowerCase().includes(term)) ||
+          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+        ) : allArticles;
+        renderAllArticles(filtered);
+      });
+    } else {
+      // Article page / other pages: Enter navigates to homepage with search query
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const term = this.value.trim();
+          if (term) {
+            window.location.href = '/?s=' + encodeURIComponent(term);
+          }
+        }
+      });
     }
   }
 
