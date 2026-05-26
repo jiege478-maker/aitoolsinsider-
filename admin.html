@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - AI Tools Insider</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional"></noscript>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">AI <span>Tools</span> Insider</a>
+    <nav>
+      <ul class="nav">
+        <li><a href="/">View Site</a></li>
+        <li><a href="/admin.html" class="active">Admin</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="admin-page" id="adminApp">
+  <!-- Login Screen -->
+  <div id="loginScreen" style="display:none;">
+    <div class="login-container">
+      <h1>Admin Login</h1>
+      <p>Sign in to manage articles</p>
+      <form class="login-form" id="loginForm">
+        <div class="login-error" id="loginError"></div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="Enter password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="dashboardScreen" style="display:none;">
+    <div class="admin-header">
+      <div>
+        <h1>Articles</h1>
+        <p style="color:var(--text-secondary);font-size:14px;" id="adminEmail"></p>
+      </div>
+      <div class="admin-actions">
+        <button class="btn btn-primary btn-sm" id="newArticleBtn">+ New Article</button>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div id="editorForm" style="display:none;">
+      <h2 id="formTitle" style="font-size:20px;font-weight:700;margin-bottom:16px;">New Article</h2>
+      <form id="articleForm">
+        <div class="form-group">
+          <label for="articleTitle">Title</label>
+          <input type="text" id="articleTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="articleSlug">Slug (URL path)</label>
+          <input type="text" id="articleSlug" required placeholder="e.g. best-ai-writing-tools">
+        </div>
+        <div class="form-group">
+          <label for="articleDescription">Description / Meta description</label>
+          <textarea id="articleDescription" rows="2" required></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label for="articleCategory">Category</label>
+            <select id="articleCategory" required></select>
+          </div>
+          <div class="form-group">
+            <label for="articleReadTime">Read time (minutes)</label>
+            <input type="number" id="articleReadTime" min="1" max="60" value="5">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label for="articleRating">Rating (0-5)</label>
+            <input type="number" id="articleRating" min="0" max="5" step="0.5" value="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="articleTags">Tags (comma separated)</label>
+            <input type="text" id="articleTags" placeholder="writing, productivity, review">
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="articlePublished"> Published
+            </label>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="articleFeatured"> Featured
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <div class="editor-container">
+            <div class="editor-toolbar" id="editorToolbar">
+              <button type="button" data-cmd="h2">H2</button>
+              <button type="button" data-cmd="h3">H3</button>
+              <div class="sep"></div>
+              <button type="button" data-cmd="bold"><b>B</b></button>
+              <button type="button" data-cmd="italic"><i>I</i></button>
+              <div class="sep"></div>
+              <button type="button" data-cmd="ul">UL</button>
+              <button type="button" data-cmd="ol">OL</button>
+              <div class="sep"></div>
+              <button type="button" data-cmd="link">Link</button>
+              <button type="button" data-cmd="quote">Quote</button>
+            </div>
+            <div class="editor-content" id="editorContent" contenteditable="true"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button type="submit" class="btn btn-primary">Save Article</button>
+          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="articlesList">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Rating</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="articlesTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="/js/supabase-client.js"></script>
+<script defer src="/js/admin.js"></script>
+</body>
+</html>
