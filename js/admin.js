@@ -1,291 +1,349 @@
-document.addEventListener('DOMContentLoaded', async function() {
-  const loginScreen = document.getElementById('loginScreen');
-  const dashboardScreen = document.getElementById('dashboardScreen');
-  const loginForm = document.getElementById('loginForm');
-  const loginError = document.getElementById('loginError');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const articlesTableBody = document.getElementById('articlesTableBody');
-  const newArticleBtn = document.getElementById('newArticleBtn');
-  const cancelEditBtn = document.getElementById('cancelEditBtn');
-  const editorForm = document.getElementById('editorForm');
-  const articlesList = document.getElementById('articlesList');
-  const articleForm = document.getElementById('articleForm');
-  const formTitle = document.getElementById('formTitle');
-  const adminEmail = document.getElementById('adminEmail');
-  const toast = document.getElementById('toast');
+/* Simple admin JS - no defer timing tricks, just inline at bottom of body */
+var AD = {};
 
-  let editingArticleId = null;
-  let categories = [];
+AD.init = function() {
+  AD.loginScreen = document.getElementById('loginScreen');
+  AD.dashboardScreen = document.getElementById('dashboardScreen');
+  AD.loginForm = document.getElementById('loginForm');
+  AD.loginError = document.getElementById('loginError');
+  AD.logoutBtn = document.getElementById('logoutBtn');
+  AD.articlesTableBody = document.getElementById('articlesTableBody');
+  AD.newArticleBtn = document.getElementById('newArticleBtn');
+  AD.cancelEditBtn = document.getElementById('cancelEditBtn');
+  AD.editorForm = document.getElementById('editorForm');
+  AD.articlesList = document.getElementById('articlesList');
+  AD.articleForm = document.getElementById('articleForm');
+  AD.formTitle = document.getElementById('formTitle');
+  AD.adminEmail = document.getElementById('adminEmail');
+  AD.toast = document.getElementById('toast');
+  AD.editorContent = document.getElementById('editorContent');
+  AD.toolbar = document.getElementById('editorToolbar');
+  AD.editingId = null;
+  AD.categories = [];
 
-  function showToast(msg, type) {
-    toast.textContent = msg;
-    toast.className = 'toast ' + type + ' show';
-    setTimeout(function() { toast.className = 'toast'; }, 3000);
-  }
+  if (!AD.loginScreen) return; // Not on admin page
 
-  function escHtml(str) {
-    if (!str) return '';
-    var d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-
-  // ===== Rich text editor =====
-  var editorContent = document.getElementById('editorContent');
-  var toolbar = document.getElementById('editorToolbar');
-  if (toolbar) {
-    toolbar.addEventListener('click', function(e) {
-      var btn = e.target.closest('button');
-      if (!btn) return;
-      e.preventDefault();
-      execCmd(btn.getAttribute('data-cmd'));
-    });
-  }
-  function execCmd(cmd) {
-    editorContent.focus();
-    switch (cmd) {
-      case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
-      case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
-      case 'bold': document.execCommand('bold'); break;
-      case 'italic': document.execCommand('italic'); break;
-      case 'ul': document.execCommand('insertUnorderedList'); break;
-      case 'ol': document.execCommand('insertOrderedList'); break;
-      case 'link':
-        var url = prompt('Enter URL:');
-        if (url) document.execCommand('createLink', false, url);
-        break;
-      case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
-    }
-  }
-
-  // ===== Show/hide screens =====
-  function showLogin() {
-    loginScreen.style.display = 'block';
-    dashboardScreen.style.display = 'none';
-  }
-  function showDashboard(email) {
-    loginScreen.style.display = 'none';
-    dashboardScreen.style.display = 'block';
-    if (adminEmail) adminEmail.textContent = 'Logged in as: ' + email;
-  }
-
-  // ===== Login =====
-  if (loginForm) {
-    loginForm.addEventListener('submit', async function(e) {
+  // Login handler
+  if (AD.loginForm) {
+    AD.loginForm.onsubmit = function(e) {
       e.preventDefault();
       var email = document.getElementById('email').value;
       var password = document.getElementById('password').value;
-      loginError.style.display = 'none';
-      try {
-        var data = await sbLogin(email, password);
-        sbSaveSession(data);
-        showDashboard(email);
-        loadArticles();
-      } catch (err) {
-        loginError.textContent = err.message;
-        loginError.style.display = 'block';
-      }
-    });
-  }
+      AD.loginError.style.display = 'none';
+      AD.loginError.textContent = 'Logging in...';
+      AD.loginError.style.display = 'block';
+      AD.loginError.style.background = '#f0f5ff';
+      AD.loginError.style.color = '#0056D2';
 
-  // ===== Logout =====
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function() {
-      sbClearSession();
-      showLogin();
-    });
-  }
-
-  // ===== Load categories =====
-  async function loadCategories() {
-    try {
-      categories = await fetchCategories();
-      var select = document.getElementById('articleCategory');
-      if (select) {
-        select.innerHTML = categories.map(function(c) {
-          return '<option value="' + c.id + '">' + escHtml(c.name) + '</option>';
-        }).join('');
-      }
-    } catch (e) { console.error('loadCategories:', e); }
-  }
-
-  // ===== Load articles =====
-  async function loadArticles() {
-    if (!articlesTableBody) return;
-    articlesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</td></tr>';
-    try {
-      var data = await fetchAllArticles();
-      if (!data || data.length === 0) {
-        articlesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No articles yet. Create your first one!</td></tr>';
-        return;
-      }
-      articlesTableBody.innerHTML = data.map(function(a) {
-        var status = a.published
-          ? '<span class="status-badge published">Published</span>'
-          : '<span class="status-badge draft">Draft</span>';
-        var rating = parseFloat(a.rating) || 0;
-        var date = new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        return '<tr>' +
-          '<td><strong>' + escHtml(a.title) + '</strong></td>' +
-          '<td>' + escHtml(a.categories?.name || '') + '</td>' +
-          '<td>' + status + '</td>' +
-          '<td>' + (rating > 0 ? rating.toFixed(1) : '-') + '</td>' +
-          '<td>' + date + '</td>' +
-          '<td class="actions">' +
-          '<button class="edit-btn" data-id="' + a.id + '">Edit</button>' +
-          '<button class="delete-btn" data-id="' + a.id + '">Delete</button>' +
-          '</td></tr>';
-      }).join('');
-      articlesTableBody.querySelectorAll('.edit-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() { editArticle(parseInt(this.dataset.id)); });
+      fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('Invalid email or password');
+        return r.json();
+      })
+      .then(function(data) {
+        localStorage.setItem('sb-access-token', data.access_token);
+        localStorage.setItem('sb-refresh-token', data.refresh_token);
+        AD.showDashboard(email);
+        AD.loadArticles();
+      })
+      .catch(function(err) {
+        AD.loginError.textContent = err.message;
+        AD.loginError.style.background = '#fef2f2';
+        AD.loginError.style.color = '#dc2626';
+        AD.loginError.style.display = 'block';
       });
-      articlesTableBody.querySelectorAll('.delete-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() { deleteArticle(parseInt(this.dataset.id)); });
-      });
-    } catch (e) {
-      articlesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#dc2626;">Error: ' + escHtml(e.message) + '</td></tr>';
-    }
+    };
   }
 
-  // ===== Edit article =====
-  async function editArticle(id) {
-    editingArticleId = id;
-    articlesList.style.display = 'none';
-    editorForm.style.display = 'block';
-    formTitle.textContent = 'Edit Article';
-    document.getElementById('articleForm').querySelector('button[type="submit"]').textContent = 'Update Article';
-    try {
-      var res = await adminFetch('/rest/v1/articles?id=eq.' + id + '&limit=1');
-      var data = (await res.json())[0];
-      if (!data) return;
-      document.getElementById('articleTitle').value = data.title || '';
-      document.getElementById('articleSlug').value = data.slug || '';
-      document.getElementById('articleDescription').value = data.description || '';
-      document.getElementById('articleCategory').value = data.category_id || '';
-      document.getElementById('articleReadTime').value = data.read_time || 5;
-      document.getElementById('articleRating').value = data.rating || 0;
-      document.getElementById('articleTags').value = (data.tags || []).join(', ');
-      document.getElementById('articlePublished').checked = data.published || false;
-      document.getElementById('articleFeatured').checked = data.featured || false;
-      if (editorContent) editorContent.innerHTML = data.content || '';
-    } catch (e) {
-      showToast('Failed to load: ' + e.message, 'error');
-      cancelEdit();
-    }
+  // Logout
+  if (AD.logoutBtn) {
+    AD.logoutBtn.onclick = function() {
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('sb-refresh-token');
+      AD.showLogin();
+    };
   }
 
-  // ===== Delete article =====
-  async function deleteArticle(id) {
-    if (!confirm('Are you sure you want to delete this article?')) return;
-    try {
-      await deleteArticle(id);
-      showToast('Article deleted', 'success');
-      loadArticles();
-    } catch (e) { showToast('Delete failed: ' + e.message, 'error'); }
+  // New article
+  if (AD.newArticleBtn) {
+    AD.newArticleBtn.onclick = function() {
+      AD.editingId = null;
+      AD.articlesList.style.display = 'none';
+      AD.editorForm.style.display = 'block';
+      AD.formTitle.textContent = 'New Article';
+      document.querySelector('#articleForm button[type="submit"]').textContent = 'Save Article';
+      AD.articleForm.reset();
+      if (AD.editorContent) AD.editorContent.innerHTML = '';
+    };
   }
 
-  // ===== New article =====
-  if (newArticleBtn) {
-    newArticleBtn.addEventListener('click', function() {
-      editingArticleId = null;
-      articlesList.style.display = 'none';
-      editorForm.style.display = 'block';
-      formTitle.textContent = 'New Article';
-      document.getElementById('articleForm').querySelector('button[type="submit"]').textContent = 'Save Article';
-      articleForm.reset();
-      if (editorContent) editorContent.innerHTML = '';
-    });
+  // Cancel edit
+  if (AD.cancelEditBtn) {
+    AD.cancelEditBtn.onclick = AD.cancelEdit;
   }
 
-  if (cancelEditBtn) {
-    cancelEditBtn.addEventListener('click', cancelEdit);
-  }
-  function cancelEdit() {
-    editingArticleId = null;
-    editorForm.style.display = 'none';
-    articlesList.style.display = 'block';
-  }
-
-  // ===== Save article =====
-  if (articleForm) {
-    articleForm.addEventListener('submit', async function(e) {
+  // Toolbar
+  if (AD.toolbar) {
+    AD.toolbar.onclick = function(e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
       e.preventDefault();
-      var title = document.getElementById('articleTitle').value.trim();
-      var slug = document.getElementById('articleSlug').value.trim();
-      var description = document.getElementById('articleDescription').value.trim();
-      var category_id = parseInt(document.getElementById('articleCategory').value);
-      var read_time = parseInt(document.getElementById('articleReadTime').value) || 5;
-      var rating = parseFloat(document.getElementById('articleRating').value) || 0;
-      var tagsStr = document.getElementById('articleTags').value.trim();
-      var tags = tagsStr ? tagsStr.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
-      var published = document.getElementById('articlePublished').checked;
-      var featured = document.getElementById('articleFeatured').checked;
-      var content = editorContent ? editorContent.innerHTML : '';
-
-      if (!title || !slug || !content) {
-        showToast('Title, slug, and content are required.', 'error');
-        return;
-      }
-
-      var articleData = {
-        title: title,
-        slug: slug,
-        description: description,
-        category_id: category_id,
-        read_time: read_time,
-        rating: rating,
-        tags: tags,
-        published: published,
-        featured: featured,
-        content: content,
-        updated_at: new Date().toISOString()
-      };
-
-      try {
-        if (editingArticleId) {
-          await updateArticle(editingArticleId, articleData);
-          showToast('Article updated!', 'success');
-        } else {
-          articleData.created_at = new Date().toISOString();
-          await createArticle(articleData);
-          showToast('Article created!', 'success');
-        }
-        cancelEdit();
-        loadArticles();
-      } catch (e) { showToast('Error: ' + e.message, 'error'); }
-    });
+      AD.execCmd(btn.getAttribute('data-cmd'));
+    };
   }
 
-  // ===== Auto-slug =====
+  // Slug auto-fill
   var titleInput = document.getElementById('articleTitle');
   var slugInput = document.getElementById('articleSlug');
   if (titleInput && slugInput) {
-    titleInput.addEventListener('input', function() {
-      if (editingArticleId) return;
+    titleInput.oninput = function() {
+      if (AD.editingId) return;
       slugInput.value = titleInput.value.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 100);
-    });
+    };
   }
 
-  // ===== Init =====
-  if (loginScreen) {
-    console.log('Admin JS loaded');
+  // Save article
+  if (AD.articleForm) {
+    AD.articleForm.onsubmit = function(e) {
+      e.preventDefault();
+      AD.saveArticle();
+    };
+  }
 
-    try { await loadCategories(); } catch (e) { console.error('loadCategories error:', e); }
+  // Check session and init
+  AD.checkSession();
+};
 
-    try {
-      var session = await sbGetSession();
-      if (session && session.user) {
-        showDashboard(session.user.email || 'Admin');
-        loadArticles();
-        return;
+AD.execCmd = function(cmd) {
+  AD.editorContent.focus();
+  switch (cmd) {
+    case 'h2': document.execCommand('formatBlock', false, '<h2>'); break;
+    case 'h3': document.execCommand('formatBlock', false, '<h3>'); break;
+    case 'bold': document.execCommand('bold'); break;
+    case 'italic': document.execCommand('italic'); break;
+    case 'ul': document.execCommand('insertUnorderedList'); break;
+    case 'ol': document.execCommand('insertOrderedList'); break;
+    case 'link':
+      var url = prompt('Enter URL:');
+      if (url) document.execCommand('createLink', false, url);
+      break;
+    case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
+  }
+};
+
+AD.showLogin = function() {
+  AD.loginScreen.style.display = 'block';
+  AD.dashboardScreen.style.display = 'none';
+};
+
+AD.showDashboard = function(email) {
+  AD.loginScreen.style.display = 'none';
+  AD.dashboardScreen.style.display = 'block';
+  if (AD.adminEmail) AD.adminEmail.textContent = 'Logged in as: ' + email;
+};
+
+AD.cancelEdit = function() {
+  AD.editingId = null;
+  AD.editorForm.style.display = 'none';
+  AD.articlesList.style.display = 'block';
+};
+
+AD.toast = function(msg, type) {
+  var el = AD.toast;
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(function() { el.className = 'toast'; }, 3000);
+};
+
+AD.checkSession = function() {
+  var token = localStorage.getItem('sb-access-token');
+  if (!token) {
+    AD.showLogin();
+    return;
+  }
+  // Verify token
+  fetch(SUPABASE_URL + '/auth/v1/user', {
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(r) {
+    if (r.ok) return r.json();
+    throw new Error('Session expired');
+  })
+  .then(function(user) {
+    AD.showDashboard(user.email || 'Admin');
+    AD.loadArticles();
+  })
+  .catch(function() {
+    // Try refresh
+    var refreshToken = localStorage.getItem('sb-refresh-token');
+    if (!refreshToken) { AD.showLogin(); return; }
+    return fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (data) {
+        localStorage.setItem('sb-access-token', data.access_token);
+        localStorage.setItem('sb-refresh-token', data.refresh_token);
+        AD.showDashboard(data.user ? data.user.email : 'Admin');
+        AD.loadArticles();
+      } else {
+        AD.showLogin();
       }
-    } catch (e) {
-      console.error('session error:', e);
-    }
+    })
+    .catch(function() { AD.showLogin(); });
+  });
+};
 
-    // Show login by default
-    loginScreen.style.display = 'block';
-    dashboardScreen.style.display = 'none';
+AD.loadCategories = function() {
+  return fetch(SUPABASE_URL + '/rest/v1/categories?select=*&order=id.asc', {
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    AD.categories = data || [];
+    var select = document.getElementById('articleCategory');
+    if (select) {
+      select.innerHTML = AD.categories.map(function(c) {
+        return '<option value="' + c.id + '">' + AD.escHtml(c.name) + '</option>';
+      }).join('');
+    }
+  })
+  .catch(function(e) { console.error('loadCategories error:', e); });
+};
+
+AD.loadArticles = function() {
+  if (!AD.articlesTableBody) return;
+  AD.articlesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">Loading...</td></tr>';
+
+  var token = localStorage.getItem('sb-access-token');
+  var headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + (token || SUPABASE_ANON_KEY), 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+  fetch(SUPABASE_URL + '/rest/v1/articles?select=*,categories(name)&order=created_at.desc', { headers: headers })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data || data.length === 0) {
+      AD.articlesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;">No articles yet.</td></tr>';
+      return;
+    }
+    AD.articlesTableBody.innerHTML = data.map(function(a) {
+      var status = a.published ? '<span class="status-badge published">Published</span>' : '<span class="status-badge draft">Draft</span>';
+      var rating = parseFloat(a.rating) || 0;
+      var date = new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return '<tr><td><strong>' + AD.escHtml(a.title) + '</strong></td><td>' + AD.escHtml(a.categories ? a.categories.name : '') + '</td><td>' + status + '</td><td>' + (rating > 0 ? rating.toFixed(1) : '-') + '</td><td>' + date + '</td><td class="actions"><button class="edit-btn" data-id="' + a.id + '">Edit</button><button class="delete-btn" data-id="' + a.id + '">Delete</button></td></tr>';
+    }).join('');
+    // Events
+    AD.articlesTableBody.querySelectorAll('.edit-btn').forEach(function(b) {
+      b.onclick = function() { AD.editArticle(parseInt(this.dataset.id)); };
+    });
+    AD.articlesTableBody.querySelectorAll('.delete-btn').forEach(function(b) {
+      b.onclick = function() { AD.deleteArticle(parseInt(this.dataset.id)); };
+    });
+  })
+  .catch(function(e) {
+    AD.articlesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#dc2626;">Error: ' + AD.escHtml(e.message) + '</td></tr>';
+  });
+};
+
+AD.editArticle = function(id) {
+  AD.editingId = id;
+  AD.articlesList.style.display = 'none';
+  AD.editorForm.style.display = 'block';
+  AD.formTitle.textContent = 'Edit Article';
+  document.querySelector('#articleForm button[type="submit"]').textContent = 'Update Article';
+
+  var token = localStorage.getItem('sb-access-token');
+  var headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  fetch(SUPABASE_URL + '/rest/v1/articles?id=eq.' + id + '&limit=1', { headers: headers })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var a = data[0];
+    if (!a) return;
+    document.getElementById('articleTitle').value = a.title || '';
+    document.getElementById('articleSlug').value = a.slug || '';
+    document.getElementById('articleDescription').value = a.description || '';
+    document.getElementById('articleCategory').value = a.category_id || '';
+    document.getElementById('articleReadTime').value = a.read_time || 5;
+    document.getElementById('articleRating').value = a.rating || 0;
+    document.getElementById('articleTags').value = (a.tags || []).join(', ');
+    document.getElementById('articlePublished').checked = a.published || false;
+    document.getElementById('articleFeatured').checked = a.featured || false;
+    if (AD.editorContent) AD.editorContent.innerHTML = a.content || '';
+  })
+  .catch(function(e) {
+    AD.toast('Failed to load: ' + e.message, 'error');
+    AD.cancelEdit();
+  });
+};
+
+AD.deleteArticle = function(id) {
+  if (!confirm('Delete this article?')) return;
+  var token = localStorage.getItem('sb-access-token');
+  fetch(SUPABASE_URL + '/rest/v1/articles?id=eq.' + id, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+  })
+  .then(function() { AD.toast('Deleted!', 'success'); AD.loadArticles(); })
+  .catch(function(e) { AD.toast('Error: ' + e.message, 'error'); });
+};
+
+AD.saveArticle = function() {
+  var title = document.getElementById('articleTitle').value.trim();
+  var slug = document.getElementById('articleSlug').value.trim();
+  var description = document.getElementById('articleDescription').value.trim();
+  var category_id = parseInt(document.getElementById('articleCategory').value);
+  var read_time = parseInt(document.getElementById('articleReadTime').value) || 5;
+  var rating = parseFloat(document.getElementById('articleRating').value) || 0;
+  var tagsStr = document.getElementById('articleTags').value.trim();
+  var tags = tagsStr ? tagsStr.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
+  var published = document.getElementById('articlePublished').checked;
+  var featured = document.getElementById('articleFeatured').checked;
+  var content = AD.editorContent ? AD.editorContent.innerHTML : '';
+
+  if (!title || !slug || !content) { AD.toast('Title, slug, and content required.', 'error'); return; }
+
+  var data = { title: title, slug: slug, description: description, category_id: category_id, read_time: read_time, rating: rating, tags: tags, published: published, featured: featured, content: content, updated_at: new Date().toISOString() };
+
+  var token = localStorage.getItem('sb-access-token');
+  var headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+  if (AD.editingId) {
+    fetch(SUPABASE_URL + '/rest/v1/articles?id=eq.' + AD.editingId, {
+      method: 'PATCH', headers: headers, body: JSON.stringify(data)
+    })
+    .then(function() { AD.toast('Updated!', 'success'); AD.cancelEdit(); AD.loadArticles(); })
+    .catch(function(e) { AD.toast('Error: ' + e.message, 'error'); });
+  } else {
+    data.created_at = new Date().toISOString();
+    fetch(SUPABASE_URL + '/rest/v1/articles', {
+      method: 'POST', headers: headers, body: JSON.stringify(data)
+    })
+    .then(function() { AD.toast('Created!', 'success'); AD.cancelEdit(); AD.loadArticles(); })
+    .catch(function(e) { AD.toast('Error: ' + e.message, 'error'); });
   }
-});
+};
+
+AD.escHtml = function(str) {
+  if (!str) return '';
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+};
+
+// Load categories on startup
+AD.loadCategories();
+
+// Init when DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', AD.init);
+} else {
+  AD.init();
+}
