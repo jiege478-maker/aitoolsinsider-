@@ -269,15 +269,23 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // ===== Init =====
   if (loginScreen) {
-    try { await loadCategories(); } catch (e) { console.error('loadCategories failed:', e); }
+    console.log('Admin JS loaded');
+
+    try { await loadCategories(); } catch (e) { console.error('loadCategories error:', e); }
+
     try {
       var session = await sbGetSession();
-      if (session) {
-        showDashboard(session.user ? session.user.email : 'Admin');
+      if (session && session.user) {
+        showDashboard(session.user.email || 'Admin');
         loadArticles();
         return;
       }
-    } catch (e) { console.error('session check failed:', e); }
-    showLogin();
+    } catch (e) {
+      console.error('session error:', e);
+    }
+
+    // Show login by default
+    loginScreen.style.display = 'block';
+    dashboardScreen.style.display = 'none';
   }
 });
