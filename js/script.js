@@ -137,11 +137,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (articles.length === 0) {
       allArticlesGrid.innerHTML = '';
       if (noResults) noResults.style.display = 'block';
-      if (articleCount) articleCount.textContent = '0 articles';
+      if (articleCount) {
+        const searchTerm = searchInput && searchInput.value.trim();
+        articleCount.textContent = searchTerm ? '0 results for "' + searchTerm + '"' : '0 articles';
+      }
       return;
     }
     if (noResults) noResults.style.display = 'none';
-    if (articleCount) articleCount.textContent = articles.length + ' articles';
+    if (articleCount) {
+      const searchTerm = searchInput && searchInput.value.trim();
+      articleCount.textContent = searchTerm
+        ? articles.length + ' results for "' + searchTerm + '"'
+        : articles.length + ' articles';
+    }
     // Remove duplicates by id
     const seen = new Set();
     const unique = articles.filter(a => {
