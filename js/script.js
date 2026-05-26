@@ -172,6 +172,11 @@ document.addEventListener('DOMContentLoaded', async function() {
       (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
     ) : allArticles;
     renderAllArticles(filtered);
+    // Scroll to results when search is active
+    if (term && document.getElementById('featuredGrid')) {
+      const el = document.getElementById('allArticlesGrid');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   // Delegate on document — catches events regardless of DOM replacements
