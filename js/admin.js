@@ -1,5 +1,6 @@
 /* Simple admin JS - no defer timing tricks, just inline at bottom of body */
 var AD = {};
+var SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTgxMzU4NiwiZXhwIjoyMDk1Mzg5NTg2fQ.Z9V0aHGsrRQjgb4C1F3V4WzfTpGlJUgA34OKI3U09bc';
 
 AD.init = function() {
   AD.loginScreen = document.getElementById('loginScreen');
@@ -15,7 +16,7 @@ AD.init = function() {
   AD.articleForm = document.getElementById('articleForm');
   AD.formTitle = document.getElementById('formTitle');
   AD.adminEmail = document.getElementById('adminEmail');
-  AD.toast = document.getElementById('toast');
+  AD._toastEl = document.getElementById('toast');
   AD.editorContent = document.getElementById('editorContent');
   AD.toolbar = document.getElementById('editorToolbar');
   AD.editingId = null;
@@ -103,11 +104,65 @@ AD.execCmd = function(cmd) {
 };
 
 AD.insertImage = function() {
-  var url = prompt('Enter image URL:');
-  if (!url) return;
-  AD.editorContent.focus();
-  var img = '<p><img src="' + AD.escHtml(url) + '" alt="" style="max-width:100%;height:auto;border-radius:8px;"></p>';
-  document.execCommand('insertHTML', false, img);
+  // Create hidden file input once
+  if (!AD._imageInput) {
+    AD._imageInput = document.createElement('input');
+    AD._imageInput.type = 'file';
+    AD._imageInput.accept = 'image/*';
+    AD._imageInput.style.display = 'none';
+    document.body.appendChild(AD._imageInput);
+
+    AD._imageInput.onchange = function() {
+      var file = AD._imageInput.files[0];
+      if (!file) return;
+
+      var token = localStorage.getItem('sb-access-token');
+      if (!token) { AD.toast('Please login first', 'error'); return; }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        AD.toast('Please select an image file', 'error');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        AD.toast('Image too large. Max 5MB.', 'error');
+        return;
+      }
+
+      // Create unique filename
+      var ext = file.name.split('.').pop().replace(/[^a-zA-Z0-9]/g, '');
+      var filename = Date.now() + '-' + Math.random().toString(36).substring(2, 6) + '.' + ext;
+
+      AD.toast('Uploading image...', 'info');
+
+      fetch(SUPABASE_URL + '/storage/v1/object/articles/' + filename, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_SERVICE_KEY,
+          'Content-Type': file.type
+        },
+        body: file
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('Upload failed (HTTP ' + r.status + ')');
+        var publicUrl = SUPABASE_URL + '/storage/v1/object/public/articles/' + filename;
+        AD.editorContent.focus();
+        document.execCommand('insertHTML', false, '<p><img src="' + publicUrl + '" alt="" style="max-width:100%;height:auto;border-radius:8px;"></p>');
+        AD.toast('Image inserted!', 'success');
+      })
+      .catch(function(e) {
+        AD.toast('Upload error: ' + e.message, 'error');
+        console.error('Image upload failed:', e);
+      });
+
+      AD._imageInput.value = '';
+    };
+  }
+
+  AD._imageInput.click();
 };
 
 AD.insertVideo = function() {
@@ -152,10 +207,11 @@ AD.cancelEdit = function() {
 };
 
 AD.toast = function(msg, type) {
-  var el = AD.toast;
-  el.textContent = msg;
-  el.className = 'toast ' + type + ' show';
-  setTimeout(function() { el.className = 'toast'; }, 3000);
+  if (!AD._toastEl) return;
+  AD._toastEl.textContent = msg;
+  AD._toastEl.className = 'toast ' + (type || '') + ' show';
+  clearTimeout(AD._toastTimer);
+  AD._toastTimer = setTimeout(function() { AD._toastEl.className = 'toast'; }, 3000);
 };
 
 AD.checkSession = function() {

@@ -594,6 +594,7 @@ ul, ol { list-style: none; }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { background: #059669; }
 .toast.error { background: #dc2626; }
+.toast.info { background: #0056D2; }
 
 /* ===== LOADING ===== */
 .loading {
