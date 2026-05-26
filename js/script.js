@@ -152,6 +152,31 @@ document.addEventListener('DOMContentLoaded', async function() {
     allArticlesGrid.innerHTML = unique.map(a => createArticleCard(a, false)).join('');
   }
 
+  // ===== Global search (bound immediately, before any async calls) =====
+  if (searchInput) {
+    const isHomepage = !!document.getElementById('featuredGrid');
+    if (isHomepage) {
+      searchInput.addEventListener('input', function() {
+        const term = this.value.toLowerCase().trim();
+        const filtered = term ? allArticles.filter(a =>
+          a.title.toLowerCase().includes(term) ||
+          (a.description && a.description.toLowerCase().includes(term)) ||
+          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+        ) : allArticles;
+        renderAllArticles(filtered);
+      });
+    } else {
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const term = this.value.trim();
+          if (term) {
+            window.location.href = '/?s=' + encodeURIComponent(term);
+          }
+        }
+      });
+    }
+  }
+
   if (featuredGrid) {
     // Homepage — load data
     let categories = [];
@@ -343,33 +368,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         articleTitle.textContent = 'Error loading article';
         document.getElementById('articleBody').innerHTML = '<p>Failed to load the article. Please try again later.</p>';
       }
-    }
-  }
-
-  // ===== Global search =====
-  if (searchInput) {
-    const isHomepage = !!document.getElementById('featuredGrid');
-    if (isHomepage) {
-      // Homepage: real-time filtering as user types
-      searchInput.addEventListener('input', function() {
-        const term = this.value.toLowerCase().trim();
-        const filtered = term ? allArticles.filter(a =>
-          a.title.toLowerCase().includes(term) ||
-          (a.description && a.description.toLowerCase().includes(term)) ||
-          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-        ) : allArticles;
-        renderAllArticles(filtered);
-      });
-    } else {
-      // Article page / other pages: Enter navigates to homepage with search query
-      searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          const term = this.value.trim();
-          if (term) {
-            window.location.href = '/?s=' + encodeURIComponent(term);
-          }
-        }
-      });
     }
   }
 
