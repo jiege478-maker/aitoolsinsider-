@@ -50,7 +50,9 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
   <div class="header-inner">
     <a href="/" class="logo">AI <span>Tools</span> Insider</a>
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search AI tools..." autocomplete="off">
+      <form id="searchForm" action="/" method="GET" role="search">
+        <input type="text" id="searchInput" name="s" placeholder="Search AI tools..." autocomplete="off">
+      </form>
     </div>
     <nav>
       <ul class="nav" id="categoryNav">

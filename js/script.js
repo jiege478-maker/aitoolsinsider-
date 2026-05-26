@@ -155,7 +155,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   // ===== Global search (bound immediately, before any async calls) =====
   if (searchInput) {
     const isHomepage = !!document.getElementById('featuredGrid');
+    const searchForm = document.getElementById('searchForm');
     if (isHomepage) {
+      // Homepage: real-time filtering as user types
       searchInput.addEventListener('input', function() {
         const term = this.value.toLowerCase().trim();
         const filtered = term ? allArticles.filter(a =>
@@ -165,28 +167,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         ) : allArticles;
         renderAllArticles(filtered);
       });
-      // Enter also re-applies search (explicit feedback)
-      searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          const term = this.value.toLowerCase().trim();
+      // Homepage: intercept form submit to prevent page navigation
+      if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const term = searchInput.value.toLowerCase().trim();
           const filtered = term ? allArticles.filter(a =>
             a.title.toLowerCase().includes(term) ||
             (a.description && a.description.toLowerCase().includes(term)) ||
             (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
           ) : allArticles;
           renderAllArticles(filtered);
-        }
-      });
-    } else {
-      searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          const term = this.value.trim();
-          if (term) {
-            window.location.href = '/?s=' + encodeURIComponent(term);
-          }
-        }
-      });
+        });
+      }
     }
+    // Article page: form submit naturally navigates to /?s=value (browser default)
   }
 
   if (featuredGrid) {
