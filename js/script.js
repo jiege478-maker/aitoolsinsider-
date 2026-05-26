@@ -138,14 +138,15 @@ document.addEventListener('DOMContentLoaded', async function() {
       allArticlesGrid.innerHTML = '';
       if (noResults) noResults.style.display = 'block';
       if (articleCount) {
-        const searchTerm = searchInput && searchInput.value.trim();
-        articleCount.textContent = searchTerm ? '0 results for "' + searchTerm + '"' : '0 articles';
+        const si = document.getElementById('searchInput');
+        articleCount.textContent = si && si.value.trim() ? '0 results for "' + si.value.trim() + '"' : '0 articles';
       }
       return;
     }
     if (noResults) noResults.style.display = 'none';
     if (articleCount) {
-      const searchTerm = searchInput && searchInput.value.trim();
+      const si = document.getElementById('searchInput');
+      const searchTerm = si && si.value.trim();
       articleCount.textContent = searchTerm
         ? articles.length + ' results for "' + searchTerm + '"'
         : articles.length + ' articles';
@@ -165,9 +166,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     const isHomepage = !!document.getElementById('featuredGrid');
     const searchForm = document.getElementById('searchForm');
 
-    // Shared filter function
+    // Re-query searchInput each time (survives Edge translator DOM replacement)
     function applySearchFilter() {
-      const term = searchInput.value.toLowerCase().trim();
+      const input = document.getElementById('searchInput');
+      if (!input) return;
+      const term = input.value.toLowerCase().trim();
       const filtered = term ? allArticles.filter(a =>
         a.title.toLowerCase().includes(term) ||
         (a.description && a.description.toLowerCase().includes(term)) ||
@@ -177,11 +180,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     if (isHomepage) {
-      // Real-time filtering: input + keyup events (broader compatibility)
-      searchInput.addEventListener('input', applySearchFilter);
-      searchInput.addEventListener('keyup', applySearchFilter);
-      // Intercept form submit to prevent page navigation
+      // Use event delegation on form (parent element — survives DOM replacement)
       if (searchForm) {
+        searchForm.addEventListener('input', applySearchFilter);
+        searchForm.addEventListener('keyup', applySearchFilter);
         searchForm.addEventListener('submit', function(e) {
           e.preventDefault();
           applySearchFilter();
