@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <span class="category-badge">${escHtml(categoryName)}</span>
           </div>
           <div class="featured-card-body">
-            <h3><a href="/article?slug=${escHtml(article.slug)}">${escHtml(article.title)}</a></h3>
+            <h3><a href="/article?slug=${escHtml(article.slug)}">${truncate(escHtml(article.title), 70)}</a></h3>
             <div class="excerpt">${escHtml(excerpt)}</div>
             <div class="featured-card-meta">
               <span class="rating">${renderStars(rating)}</span>
@@ -97,6 +97,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  function truncate(str, len) {
+    if (!str || str.length <= len) return str || '';
+    return str.substring(0, len) + '...';
   }
 
   // ===== Render category section with horizontal scroll =====
@@ -137,25 +142,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
       categories = await fetchCategories();
 
-      // Populate nav
-      const categoryNav = document.getElementById('categoryNav');
-      if (categoryNav) {
-        let navHtml = '<li><a href="/" data-filter="all" class="active">Home</a></li>';
-        categories.forEach(cat => {
-          navHtml += `<li><a href="/?category=${escHtml(cat.slug)}" data-filter="${escHtml(cat.slug)}">${escHtml(cat.name)}</a></li>`;
-        });
-        categoryNav.innerHTML = navHtml;
-      }
-
-      // Populate footer categories
-      const footerCat = document.getElementById('footerCategories');
-      if (footerCat) {
-        let footerHtml = '<li><a href="/">Home</a></li>';
-        categories.forEach(cat => {
-          footerHtml += `<li><a href="/?category=${escHtml(cat.slug)}">${escHtml(cat.name)}</a></li>`;
-        });
-        footerCat.innerHTML = footerHtml;
-      }
+      // Categories are pre-rendered in HTML — nav and footer already have them
 
       // Fetch articles
       allArticles = await fetchPublishedArticles(currentFilterCategory);
@@ -172,11 +159,14 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
 
       // Featured articles
-      const featured = allArticles.filter(a => a.featured).slice(0, 6);
-      if (featured.length > 0 && !currentFilterCategory) {
-        featuredGrid.innerHTML = featured.map(a => createArticleCard(a, true)).join('');
+      if (!currentFilterCategory) {
+        const featured = allArticles.filter(a => a.featured).slice(0, 6);
+        if (featured.length > 0) {
+          featuredGrid.innerHTML = featured.map(a => createArticleCard(a, true)).join('');
+        } else {
+          document.getElementById('featured').style.display = 'none';
+        }
       } else {
-        featuredGrid.innerHTML = '';
         document.getElementById('featured').style.display = 'none';
       }
 
@@ -206,6 +196,19 @@ document.addEventListener('DOMContentLoaded', async function() {
           ) : allArticles;
           renderAllArticles(filtered);
         });
+
+        // Trending tags
+        document.querySelectorAll('.trending-tag').forEach(function(tag) {
+          tag.addEventListener('click', function() {
+            var term = this.getAttribute('data-tag');
+            searchInput.value = term;
+            // Trigger search
+            var evt = new Event('input');
+            searchInput.dispatchEvent(evt);
+            // Scroll to articles
+            document.getElementById('allArticlesGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        });
       }
     } catch (e) {
       console.error('Failed to load data:', e);
@@ -213,6 +216,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         allArticlesGrid.innerHTML = '<div class="no-results">Failed to load articles. Please check your Supabase configuration in /js/supabase-client.js</div>';
       }
     }
+
+    // All sections populate progressively as data loads
 
     function renderAllArticles(articles) {
       if (!allArticlesGrid) return;
@@ -255,10 +260,10 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Update page title and meta
           document.title = article.title + ' - AI Tools Insider';
           document.querySelector('meta[name="description"]').content = article.description || '';
-          document.querySelector('link[rel="canonical"]').href = 'https://toolrankly.com/article?slug=' + slug;
+          document.querySelector('link[rel="canonical"]').href = 'https://aitoolsinsider.com/article?slug=' + slug;
           document.querySelector('meta[property="og:title"]').content = article.title;
           document.querySelector('meta[property="og:description"]').content = article.description || '';
-          document.querySelector('meta[property="og:url"]').content = 'https://toolrankly.com/article?slug=' + slug;
+          document.querySelector('meta[property="og:url"]').content = 'https://aitoolsinsider.com/article?slug=' + slug;
           document.querySelector('meta[name="twitter:title"]').content = article.title;
           document.querySelector('meta[name="twitter:description"]').content = article.description || '';
 
@@ -280,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Tags
           const tagsDiv = document.getElementById('articleTags');
           if (tagsDiv) {
-            const tagTypes = ['review', 'comparison', 'guide'];
+            const tagTypes = ['tutorial', 'how-to', 'guide'];
             const tagType = tagTypes[article.category_id % tagTypes.length];
             tagsDiv.innerHTML = `<span class="tag tag--${tagType}">${escHtml(categoryName)}</span>`;
           }
@@ -323,9 +328,11 @@ document.addEventListener('DOMContentLoaded', async function() {
           if (relatedContainer) {
             const related = await fetchRelatedArticles(article.category_id, slug, 4);
             if (related.length > 0) {
-              relatedContainer.innerHTML = related.map(r =>
-                '<li><a href="/article?slug=' + escHtml(r.slug) + '">' + escHtml(r.title) + '</a></li>'
-              ).join('');
+              relatedContainer.innerHTML = related.map(r => {
+                var t = escHtml(r.title);
+                t = t.length > 45 ? t.substring(0, 42) + '...' : t;
+                return '<li><a href="/article?slug=' + escHtml(r.slug) + '">' + t + '</a></li>';
+              }).join('');
             } else {
               relatedContainer.innerHTML = '<li style="color:var(--text-muted);font-size:13px;">No related articles yet.</li>';
             }

@@ -2,11 +2,151 @@
   {
     "url": "https://dev.to/rileycraig14/the-open-bot-marketplace-where-ai-agents-earn-money-per-call-85769-md1",
     "title": "The open bot marketplace where AI agents earn money per call [85769]",
-    "date": "2026-05-26T19:27:04.515Z"
+    "date": "2026-05-26T19:32:18.430Z"
   },
   {
-    "url": "https://dev.to/chiefmojo79/topology-rewrite-not-bug-repair-10cj",
-    "title": "Topology rewrite not bug repair",
-    "date": "2026-05-26T19:27:13.776Z"
+    "url": "https://dev.to/qingluan/800-ai-models-one-api-key-stop-managing-10-subscriptions-dfb",
+    "title": "800+ AI Models, One API Key 鈥\udc94 Stop Managing 10 Subscriptions",
+    "date": "2026-05-26T19:32:30.908Z"
+  },
+  {
+    "url": "https://dev.to/ishkhan97/why-hybrid-metaheuristics-still-beat-smarter-ai-in-real-world-optimization-4gb9",
+    "title": "Why Hybrid Metaheuristics Still Beat \"Smarter\" AI in Real-World Optimization",
+    "date": "2026-05-26T19:36:45.397Z"
+  },
+  {
+    "url": "https://github.com/rohitg00/ai-engineering-from-scratch",
+    "title": "rohitg00/ai-engineering-from-scratch: Learn it. Build it. Ship it for others.",
+    "date": "2026-05-26T20:22:59.460Z"
+  },
+  {
+    "url": "https://github.com/labmlai/annotated_deep_learning_paper_implementations",
+    "title": "labmlai/annotated_deep_learning_paper_implementations",
+    "date": "2026-05-26T20:26:02.676Z"
+  },
+  {
+    "url": "https://github.com/Avik-Jain/100-Days-Of-ML-Code",
+    "title": "Avik-Jain/100-Days-Of-ML-Code: 100 Days of ML Coding",
+    "date": "2026-05-26T20:26:33.135Z"
+  },
+  {
+    "url": "https://github.com/aymericdamien/TensorFlow-Examples",
+    "title": "aymericdamien/TensorFlow-Examples: TensorFlow Tutorial and Examples for Beginners (support TF v1 & v2)",
+    "date": "2026-05-26T20:26:35.905Z"
+  },
+  {
+    "url": "https://github.com/shareAI-lab/learn-claude-code",
+    "title": "shareAI-lab/learn-claude-code",
+    "date": "2026-05-26T20:26:38.806Z"
+  },
+  {
+    "url": "https://github.com/datawhalechina/hello-agents",
+    "title": "datawhalechina/hello-agents",
+    "date": "2026-05-26T20:26:55.214Z"
+  },
+  {
+    "url": "https://dev.to/oncrew/ai-dispatcher-for-electricians-after-hours-a-practical-buying-framework-for-electrical-contractors-kk3",
+    "title": "AI dispatcher for electricians after hours: a practical buying framework for electrical contractors",
+    "date": "2026-05-26T20:34:00.020Z"
+  },
+  {
+    "url": "https://dev.to/yakhilesh/98-rag-give-your-ai-access-to-your-documents-f3b",
+    "title": "98. RAG: Give Your AI Access to Your Documents",
+    "date": "2026-05-26T20:34:20.659Z"
+  },
+  {
+    "url": "https://dev.to/tarunai/the-autonomous-ai-lie-what-nobody-shows-you-about-2-am-crash-logs-nff",
+    "title": "The Autonomous AI Lie: What Nobody Shows You About 2 AM Crash Logs",
+    "date": "2026-05-26T20:34:30.609Z"
+  },
+  {
+    "url": "https://github.com/NirDiamant/RAG_Techniques",
+    "title": "NirDiamant/RAG_Techniques: Advanced RAG techniques with detailed notebook tutorials.",
+    "date": "2026-05-26T20:42:54.174Z"
+  },
+  {
+    "url": "https://github.com/lexfridman/mit-deep-learning",
+    "title": "lexfridman/mit-deep-learning: Tutorials, assignments, and competitions for MIT Deep Learning courses.",
+    "date": "2026-05-26T20:48:08.129Z"
+  },
+  {
+    "url": "https://dev.to/kenwalger/the-joke-worked-building-an-ai-powered-cobol-meeting-auditor-with-hermes-agent-1d4f",
+    "title": "The Joke Worked: Building an AI-Powered COBOL Meeting Auditor with Hermes Agent",
+    "date": "2026-05-26T21:03:40.304Z"
+  },
+  {
+    "url": "https://dev.to/peytongreen_dev/async-python-for-ai-applications-patterns-that-dont-break-under-load-35o2",
+    "title": "Async Python for AI Applications: Patterns That Don't Break Under Load",
+    "date": "2026-05-26T21:03:47.955Z"
+  },
+  {
+    "url": "https://dev.to/gentic_news/anthropic-sandboxing-agents-by-capability-level-10jf",
+    "title": "Anthropic Sandboxing Agents by Capability Level",
+    "date": "2026-05-26T21:04:02.444Z"
+  },
+  {
+    "url": "https://dev.to/rileycraig14/how-i-built-a-bot-that-earns-money-by-answering-other-bots-62489-289l",
+    "title": "How I built a bot that earns money by answering other bots [62489]",
+    "date": "2026-05-26T21:04:10.323Z"
+  },
+  {
+    "url": "https://dev.to/jasmin/an-llm-api-call-in-4-gifs-33b1",
+    "title": "An LLM API call, in 4 GIFs",
+    "date": "2026-05-26T21:04:25.873Z"
+  },
+  {
+    "url": "https://dev.to/oncrew/ai-receptionist-vs-human-receptionist-a-practical-buying-framework-for-contractors-22i4",
+    "title": "AI receptionist vs human receptionist: a practical buying framework for contractors",
+    "date": "2026-05-26T21:04:35.713Z"
+  },
+  {
+    "url": "https://dev.to/asekka/run-your-first-ai-agent-in-java-for-free-with-mistral-3dhj",
+    "title": "Run your first AI agent in Java — for free, with Mistral",
+    "date": "2026-05-26T21:06:44.491Z"
+  },
+  {
+    "url": "https://github.com/openai/openai-cookbook",
+    "title": "OpenAI Cookbook: Examples and guides for using the OpenAI API",
+    "date": "2026-05-26T21:15:37.083Z"
+  },
+  {
+    "url": "https://github.com/anthropics/anthropic-cookbook",
+    "title": "Anthropic Cookbook: A collection of notebooks/recipes showcasing some fun and effective ways of using Claude.",
+    "date": "2026-05-26T21:15:39.713Z"
+  },
+  {
+    "url": "https://github.com/google-gemini/gemini-api-cookbook",
+    "title": "Google Gemini Cookbook: Examples and guides for using the Gemini API",
+    "date": "2026-05-26T21:15:42.073Z"
+  },
+  {
+    "url": "https://github.com/meta-llama/llama-recipes",
+    "title": "Meta LLaMA Recipes: Welcome to the Llama Cookbook! This is your go to guide for Building with Llama: Getting started with Inference, Fine-Tuning, RAG. We also show you how to solve end to end problems using Llama model family and using them on various provider services  ",
+    "date": "2026-05-26T21:15:44.253Z"
+  },
+  {
+    "url": "https://github.com/dair-ai/Prompt-Engineering-Guide",
+    "title": "DAIR Prompt Engineering Guide: 🐙 Guides, papers, lessons, notebooks and resources for prompt engineering, context engineering, RAG, and AI Agents.",
+    "date": "2026-05-26T21:15:45.372Z"
+  },
+  {
+    "url": "https://github.com/huggingface/diffusers",
+    "title": "HuggingFace Diffusers - Image Generation: 🤗 Diffusers: State-of-the-art diffusion models for image, video, and audio generation in PyTorch.",
+    "date": "2026-05-26T21:15:46.792Z"
+  },
+  {
+    "url": "https://github.com/CompVis/stable-diffusion",
+    "title": "Stable Diffusion by CompVis: Official tutorials and examples",
+    "date": "2026-05-26T21:15:49.213Z"
+  },
+  {
+    "url": "https://github.com/huggingface/diffusers/tree/main/examples/cogvideo",
+    "title": "HuggingFace CogVideoX - Text-to-Video: Official tutorials and examples",
+    "date": "2026-05-26T21:22:12.092Z"
+  },
+  {
+    "url": "https://github.com/run-llama/llama_index",
+    "title": "LlamaIndex - RAG Framework: Official tutorials and examples",
+    "date": "2026-05-26T21:22:13.400Z"
   }
 ]

@@ -4,7 +4,8 @@
   "description": "AI tutorial article crawler",
   "main": "crawler.js",
   "dependencies": {
-    "rss-parser": "^3.13.0",
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.0.0",
+    "marked": "^18.0.4",
+    "rss-parser": "^3.13.0"
   }
 }

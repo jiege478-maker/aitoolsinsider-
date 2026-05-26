@@ -83,7 +83,10 @@ async function fetchCategories() {
 async function fetchPublishedArticles(categorySlug) {
   let url = '/rest/v1/articles?select=*,categories(name,slug)&eq(published,true)&order=created_at.desc';
   if (categorySlug) {
-    url += '&categories.slug=eq.' + encodeURIComponent(categorySlug);
+    // Map slug to category_id (Supabase REST API can't filter parent by nested column)
+    const slugToId = { writing: 1, image: 2, coding: 3, video: 4, productivity: 5 };
+    const catId = slugToId[categorySlug];
+    if (catId) url += '&category_id=eq.' + catId;
   }
   const res = await sbFetch(url);
   return res.json();
