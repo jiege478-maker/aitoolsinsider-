@@ -376,6 +376,14 @@ ul, ol { list-style: none; }
 .article-body ol li { list-style: decimal; }
 .article-body a { font-weight: 500; }
 .article-body strong { color: var(--text); }
+.article-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0; }
+.article-body .video-container {
+  position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+  border-radius: 8px; margin: 16px 0;
+}
+.article-body .video-container iframe {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+}
 .article-body blockquote {
   border-left: 3px solid var(--primary);
   padding: 12px 20px; margin: 24px 0;

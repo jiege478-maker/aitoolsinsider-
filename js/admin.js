@@ -97,7 +97,41 @@ AD.execCmd = function(cmd) {
       if (url) document.execCommand('createLink', false, url);
       break;
     case 'quote': document.execCommand('formatBlock', false, '<blockquote>'); break;
+    case 'image': AD.insertImage(); break;
+    case 'video': AD.insertVideo(); break;
   }
+};
+
+AD.insertImage = function() {
+  var url = prompt('Enter image URL:');
+  if (!url) return;
+  AD.editorContent.focus();
+  var img = '<p><img src="' + AD.escHtml(url) + '" alt="" style="max-width:100%;height:auto;border-radius:8px;"></p>';
+  document.execCommand('insertHTML', false, img);
+};
+
+AD.insertVideo = function() {
+  var url = prompt('Enter video URL (YouTube, Vimeo, or direct video link):');
+  if (!url) return;
+  AD.editorContent.focus();
+  var embedUrl = url;
+  // YouTube watch -> embed
+  var ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) {
+    embedUrl = 'https://www.youtube.com/embed/' + ytMatch[1];
+  }
+  // YouTube short
+  var ytShort = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
+  if (ytShort) {
+    embedUrl = 'https://www.youtube.com/embed/' + ytShort[1];
+  }
+  // Vimeo
+  var vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) {
+    embedUrl = 'https://player.vimeo.com/video/' + vimeoMatch[1];
+  }
+  var videoHtml = '<div class="video-container"><iframe src="' + AD.escHtml(embedUrl) + '" frameborder="0" allowfullscreen></iframe></div>';
+  document.execCommand('insertHTML', false, videoHtml);
 };
 
 AD.showLogin = function() {
