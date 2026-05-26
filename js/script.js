@@ -165,6 +165,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         ) : allArticles;
         renderAllArticles(filtered);
       });
+      // Enter also re-applies search (explicit feedback)
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const term = this.value.toLowerCase().trim();
+          const filtered = term ? allArticles.filter(a =>
+            a.title.toLowerCase().includes(term) ||
+            (a.description && a.description.toLowerCase().includes(term)) ||
+            (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+          ) : allArticles;
+          renderAllArticles(filtered);
+        }
+      });
     } else {
       searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
@@ -237,6 +249,17 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (searchQuery && searchInput) {
         searchInput.value = searchQuery;
         const term = searchQuery.toLowerCase().trim();
+        const filtered = term ? allArticles.filter(a =>
+          a.title.toLowerCase().includes(term) ||
+          (a.description && a.description.toLowerCase().includes(term)) ||
+          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+        ) : allArticles;
+        renderAllArticles(filtered);
+      }
+
+      // Re-apply search filter if user typed before data loaded
+      if (searchInput && searchInput.value.trim()) {
+        const term = searchInput.value.toLowerCase().trim();
         const filtered = term ? allArticles.filter(a =>
           a.title.toLowerCase().includes(term) ||
           (a.description && a.description.toLowerCase().includes(term)) ||
