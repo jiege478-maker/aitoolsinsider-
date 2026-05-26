@@ -23,42 +23,6 @@ AD.init = function() {
 
   if (!AD.loginScreen) return; // Not on admin page
 
-  // Login handler
-  if (AD.loginForm) {
-    AD.loginForm.onsubmit = function(e) {
-      e.preventDefault();
-      var email = document.getElementById('email').value;
-      var password = document.getElementById('password').value;
-      AD.loginError.style.display = 'none';
-      AD.loginError.textContent = 'Logging in...';
-      AD.loginError.style.display = 'block';
-      AD.loginError.style.background = '#f0f5ff';
-      AD.loginError.style.color = '#0056D2';
-
-      fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password })
-      })
-      .then(function(r) {
-        if (!r.ok) throw new Error('Invalid email or password');
-        return r.json();
-      })
-      .then(function(data) {
-        localStorage.setItem('sb-access-token', data.access_token);
-        localStorage.setItem('sb-refresh-token', data.refresh_token);
-        AD.showDashboard(email);
-        AD.loadArticles();
-      })
-      .catch(function(err) {
-        AD.loginError.textContent = err.message;
-        AD.loginError.style.background = '#fef2f2';
-        AD.loginError.style.color = '#dc2626';
-        AD.loginError.style.display = 'block';
-      });
-    };
-  }
-
   // Logout
   if (AD.logoutBtn) {
     AD.logoutBtn.onclick = function() {
