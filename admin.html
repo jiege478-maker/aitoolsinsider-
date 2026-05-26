@@ -152,6 +152,60 @@
 
 <div class="toast" id="toast"></div>
 
+<script>
+// Inline login handler - works regardless of external JS
+(function() {
+  var form = document.getElementById('loginForm');
+  var errorDiv = document.getElementById('loginError');
+  if (!form) return;
+
+  var SUPABASE_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps';
+
+  form.onsubmit = function(e) {
+    e.preventDefault();
+    var email = document.getElementById('email').value;
+    var password = document.getElementById('password').value;
+    errorDiv.textContent = 'Logging in...';
+    errorDiv.style.display = 'block';
+    errorDiv.style.background = '#e8f0fe';
+    errorDiv.style.color = '#0056D2';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', SUPABASE_URL + '/auth/v1/token?grant_type=password', true);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        localStorage.setItem('sb-access-token', data.access_token);
+        localStorage.setItem('sb-refresh-token', data.refresh_token);
+        errorDiv.textContent = 'Login successful! Loading dashboard...';
+        errorDiv.style.background = '#ecfdf5';
+        errorDiv.style.color = '#059669';
+        location.reload();
+      } else {
+        try {
+          var err = JSON.parse(xhr.responseText);
+          errorDiv.textContent = err.msg || err.message || 'Login failed (HTTP ' + xhr.status + ')';
+        } catch(e) {
+          errorDiv.textContent = 'Login failed (HTTP ' + xhr.status + ')';
+        }
+        errorDiv.style.background = '#fef2f2';
+        errorDiv.style.color = '#dc2626';
+        errorDiv.style.display = 'block';
+      }
+    };
+    xhr.onerror = function() {
+      errorDiv.textContent = 'Network error - cannot reach server. Check console for details.';
+      errorDiv.style.background = '#fef2f2';
+      errorDiv.style.color = '#dc2626';
+      errorDiv.style.display = 'block';
+    };
+    xhr.send(JSON.stringify({ email: email, password: password }));
+  };
+})();
+</script>
 <script defer src="/js/supabase-client.js"></script>
 <script defer src="/js/admin.js"></script>
 </body>
