@@ -41,7 +41,7 @@
           <label for="password">Password</label>
           <input type="password" id="password" required placeholder="Enter password">
         </div>
-        <button type="button" id="loginBtn" class="btn btn-primary" style="width:100%;justify-content:center;">Sign In</button>
+        <button type="button" id="loginBtn" class="btn btn-primary" style="width:100%;justify-content:center;" onclick="adminLogin()">Sign In</button>
       </form>
     </div>
   </div>
@@ -153,68 +153,54 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Inline login handler - works regardless of external JS
-(function() {
-  var btn = document.getElementById('loginBtn');
-  var form = document.getElementById('loginForm');
+// Inline login handler - global function for onclick
+var ADMIN_API_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
+var ADMIN_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps';
+
+function adminLogin() {
+  var email = document.getElementById('email').value;
+  var password = document.getElementById('password').value;
   var errorDiv = document.getElementById('loginError');
-  if (!btn) return;
+  if (!email || !password) { alert('Please enter email and password.'); return; }
 
-  var SUPABASE_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
-  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps';
+  errorDiv.textContent = 'Logging in...';
+  errorDiv.style.display = 'block';
+  errorDiv.style.background = '#e8f0fe';
+  errorDiv.style.color = '#0056D2';
 
-  function doLogin() {
-    var email = document.getElementById('email').value;
-    var password = document.getElementById('password').value;
-    if (!email || !password) {
-      errorDiv.textContent = 'Please enter email and password.';
-      errorDiv.style.display = 'block';
-      errorDiv.style.background = '#fef2f2';
-      errorDiv.style.color = '#dc2626';
-      return;
-    }
-    errorDiv.textContent = 'Logging in...';
-    errorDiv.style.display = 'block';
-    errorDiv.style.background = '#e8f0fe';
-    errorDiv.style.color = '#0056D2';
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', SUPABASE_URL + '/auth/v1/token?grant_type=password', true);
-    xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        var data = JSON.parse(xhr.responseText);
-        localStorage.setItem('sb-access-token', data.access_token);
-        localStorage.setItem('sb-refresh-token', data.refresh_token);
-        errorDiv.textContent = 'Login successful! Loading dashboard...';
-        errorDiv.style.background = '#ecfdf5';
-        errorDiv.style.color = '#059669';
-        location.reload();
-      } else {
-        try {
-          var err = JSON.parse(xhr.responseText);
-          errorDiv.textContent = err.msg || err.message || 'Login failed (HTTP ' + xhr.status + ')';
-        } catch(e) {
-          errorDiv.textContent = 'Login failed (HTTP ' + xhr.status + ')';
-        }
-        errorDiv.style.background = '#fef2f2';
-        errorDiv.style.color = '#dc2626';
-        errorDiv.style.display = 'block';
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', ADMIN_API_URL + '/auth/v1/token?grant_type=password', true);
+  xhr.setRequestHeader('apikey', ADMIN_API_KEY);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      localStorage.setItem('sb-access-token', data.access_token);
+      localStorage.setItem('sb-refresh-token', data.refresh_token);
+      errorDiv.textContent = 'Login successful! Loading dashboard...';
+      errorDiv.style.background = '#ecfdf5';
+      errorDiv.style.color = '#059669';
+      location.reload();
+    } else {
+      try {
+        var err = JSON.parse(xhr.responseText);
+        errorDiv.textContent = err.msg || err.message || 'Login failed (HTTP ' + xhr.status + ')';
+      } catch(e) {
+        errorDiv.textContent = 'Login failed (HTTP ' + xhr.status + ')';
       }
-    };
-    xhr.onerror = function() {
-      errorDiv.textContent = 'Network error - cannot reach server. Check console for details.';
       errorDiv.style.background = '#fef2f2';
       errorDiv.style.color = '#dc2626';
       errorDiv.style.display = 'block';
-    };
-    xhr.send(JSON.stringify({ email: email, password: password }));
-  }
-
-  btn.onclick = doLogin;
-  if (form) form.onsubmit = function(e) { e.preventDefault(); doLogin(); };
-})();
+    }
+  };
+  xhr.onerror = function() {
+    errorDiv.textContent = 'Network error - cannot reach server.';
+    errorDiv.style.background = '#fef2f2';
+    errorDiv.style.color = '#dc2626';
+    errorDiv.style.display = 'block';
+  };
+  xhr.send(JSON.stringify({ email: email, password: password }));
+}
 </script>
 <script defer src="/js/supabase-client.js"></script>
 <script defer src="/js/admin.js"></script>
