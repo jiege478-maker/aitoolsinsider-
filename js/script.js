@@ -161,37 +161,40 @@ document.addEventListener('DOMContentLoaded', async function() {
     allArticlesGrid.innerHTML = unique.map(a => createArticleCard(a, false)).join('');
   }
 
-  // ===== Global search (bound immediately, before any async calls) =====
-  if (searchInput) {
-    const isHomepage = !!document.getElementById('featuredGrid');
-    const searchForm = document.getElementById('searchForm');
-
-    // Re-query searchInput each time (survives Edge translator DOM replacement)
-    function applySearchFilter() {
-      const input = document.getElementById('searchInput');
-      if (!input) return;
-      const term = input.value.toLowerCase().trim();
-      const filtered = term ? allArticles.filter(a =>
-        a.title.toLowerCase().includes(term) ||
-        (a.description && a.description.toLowerCase().includes(term)) ||
-        (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-      ) : allArticles;
-      renderAllArticles(filtered);
-    }
-
-    if (isHomepage) {
-      // Use event delegation on form (parent element — survives DOM replacement)
-      if (searchForm) {
-        searchForm.addEventListener('input', applySearchFilter);
-        searchForm.addEventListener('keyup', applySearchFilter);
-        searchForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          applySearchFilter();
-        });
-      }
-    }
-    // Article page: form submit naturally navigates to /?s=value (browser default)
+  // ===== Global search (document-level delegation, survives DOM replacements) =====
+  function applySearchFilter() {
+    const input = document.getElementById('searchInput');
+    if (!input) return;
+    const term = input.value.toLowerCase().trim();
+    const filtered = term ? allArticles.filter(a =>
+      a.title.toLowerCase().includes(term) ||
+      (a.description && a.description.toLowerCase().includes(term)) ||
+      (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
+    ) : allArticles;
+    renderAllArticles(filtered);
   }
+
+  // Delegate on document — catches events regardless of DOM replacements
+  document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'searchInput') {
+      applySearchFilter();
+    }
+  });
+  document.addEventListener('keyup', function(e) {
+    if (e.target && e.target.id === 'searchInput' && !!document.getElementById('featuredGrid')) {
+      applySearchFilter();
+    }
+  });
+  // Intercept form submit on homepage only
+  document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'searchForm') {
+      if (document.getElementById('featuredGrid')) {
+        e.preventDefault();
+        applySearchFilter();
+      }
+      // Article page: let it navigate naturally
+    }
+  });
 
   if (featuredGrid) {
     // Homepage — load data
