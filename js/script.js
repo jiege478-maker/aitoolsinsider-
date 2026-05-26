@@ -197,18 +197,7 @@ document.addEventListener('DOMContentLoaded', async function() {
           renderAllArticles(filtered);
         });
 
-        // Trending tags
-        document.querySelectorAll('.trending-tag').forEach(function(tag) {
-          tag.addEventListener('click', function() {
-            var term = this.getAttribute('data-tag');
-            searchInput.value = term;
-            // Trigger search
-            var evt = new Event('input');
-            searchInput.dispatchEvent(evt);
-            // Scroll to articles
-            document.getElementById('allArticlesGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-        });
+        // Trending tags removed
       }
     } catch (e) {
       console.error('Failed to load data:', e);
