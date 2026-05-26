@@ -1,7 +1,5 @@
-// ⚠️ 请替换为你的 Supabase 项目凭证
-// 在 https://supabase.com 创建项目后，从 Settings → API 获取
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
