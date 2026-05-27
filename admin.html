@@ -258,6 +258,15 @@ tr:hover td{background:#f8fafc}
     <button class="btn btn-s btn-xs" id="filter-published" onclick="setArticleFilter('published')">已发布</button>
   </div>
 
+  <!-- Batch Action Bar -->
+  <div id="batchBar" style="display:none;background:#fff;border:1px solid #2563eb;border-radius:8px;padding:10px 16px;margin:10px 0;align-items:center;gap:12px;font-size:13px">
+    <span style="font-weight:600;color:#1a1a2e" id="batchCount">选中 0 篇</span>
+    <span style="color:#94a3b8">|</span>
+    <button class="btn btn-p btn-sm" onclick="batchPublish()">📢 批量发布</button>
+    <button class="btn btn-d btn-sm" onclick="batchDelete()">🗑️ 批量删除</button>
+    <button class="btn btn-s btn-xs" onclick="clearSelection()">取消选择</button>
+  </div>
+
   <!-- Editor Form -->
   <div class="editor-form" id="editorForm" style="display:none">
     <h2 id="editorTitle">新建文章</h2>
@@ -290,7 +299,7 @@ tr:hover td{background:#f8fafc}
       <div class="ls" id="artLoading"><div class="sp"></div>加载文章中...</div>
       <div class="err" id="artError" style="display:none"></div>
       <table id="artTable" style="display:none">
-        <thead><tr><th>ID</th><th>标题</th><th>分类</th><th>状态</th><th>阅读</th><th>评分</th><th style="width:100px">操作</th></tr></thead>
+        <thead><tr><th style="width:32px"><input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this)"></th><th>ID</th><th>标题</th><th>分类</th><th>状态</th><th>阅读</th><th>评分</th><th style="width:100px">操作</th></tr></thead>
         <tbody id="artBody"></tbody>
       </table>
     </div>
@@ -581,6 +590,46 @@ function renderDashboard(articles,pubCount){
 var currentEditId = null;
 var _previewArticleId = null;
 var articleFilter = 'all';
+var selectedIds = new Set();
+
+function toggleSelectAll(checkbox) {
+  var checks = document.querySelectorAll('.article-check');
+  checks.forEach(function(cb) {
+    cb.checked = checkbox.checked;
+    if (checkbox.checked) selectedIds.add(parseInt(cb.value));
+    else selectedIds.delete(parseInt(cb.value));
+  });
+  updateBatchBar();
+}
+
+function updateBatchBar() {
+  var bar = document.getElementById('batchBar');
+  var checks = document.querySelectorAll('.article-check');
+  selectedIds.clear();
+  checks.forEach(function(cb) {
+    if (cb.checked) selectedIds.add(parseInt(cb.value));
+  });
+  var count = selectedIds.size;
+  document.getElementById('batchCount').textContent = '选中 ' + count + ' 篇';
+  bar.style.display = count > 0 ? 'flex' : 'none';
+  // Sync select-all checkbox
+  var selectAll = document.getElementById('selectAllCheck');
+  if (selectAll) {
+    var total = checks.length;
+    var checked = document.querySelectorAll('.article-check:checked').length;
+    selectAll.checked = total > 0 && checked === total;
+  }
+}
+
+function clearSelection() {
+  document.querySelectorAll('.article-check').forEach(function(cb) { cb.checked = false; });
+  selectedIds.clear();
+  updateBatchBar();
+}
+
+function getSelectedIds() {
+  return Array.from(selectedIds).sort(function(a,b){return a-b});
+}
 
 async function loadArticles() {
   document.getElementById('artLoading').style.display='';document.getElementById('artLoading').innerHTML='<div class="sp"></div>加载中...';
@@ -628,7 +677,7 @@ function renderArticles(articles) {
   articles.forEach(function(a){
     var cn=CAT_NAMES[a.category_id]||'—',bg=CAT_BADGE[a.category_id]||'',st=a.published?'<span style="color:#059669">已发布</span>':'<span style="color:#94a3b8">草稿</span>';
     var date=a.created_at?new Date(a.created_at).toLocaleDateString('zh-CN',{month:'short',day:'numeric'}):'—';
-    html+='<tr><td style="color:#94a3b8;font-size:11px">'+(a.id||'')+'</td>'+
+    html+='<tr><td><input type="checkbox" class="article-check" value="'+a.id+'" onchange="updateBatchBar()"></td><td style="color:#94a3b8;font-size:11px">'+(a.id||'')+'</td>'+
       '<td><a href="/article?slug='+encodeURIComponent(a.slug||'')+'" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:500">'+(a.title||'').substring(0,55)+'</a></td>'+
       '<td><span class="bdg '+bg+'">'+cn+'</span></td>'+
       '<td>'+st+'</td>'+
@@ -904,6 +953,39 @@ async function deleteArticle(id) {
     toast('文章 #'+id+' 已删除','ok');
     loadArticles();
   } catch(e) {toast('删除失败: '+e.message,'er');}
+}
+
+// ===== BATCH OPERATIONS =====
+
+async function batchPublish() {
+  var ids = getSelectedIds();
+  if (!ids.length) return;
+  if (!confirm('确定发布选中的 ' + ids.length + ' 篇文章？')) return;
+  try {
+    await api('/rest/v1/articles?id=in.(' + ids.join(',') + ')', {
+      method: 'PATCH',
+      body: JSON.stringify({ published: true, updated_at: new Date().toISOString() })
+    });
+    toast('已发布 ' + ids.length + ' 篇', 'ok');
+    clearSelection();
+    loadArticles();
+  } catch (e) { toast('批量发布失败: ' + e.message, 'er'); }
+}
+
+async function batchDelete() {
+  var ids = getSelectedIds();
+  if (!ids.length) return;
+  document.getElementById('deleteMsg').textContent = '确定删除选中的 ' + ids.length + ' 篇文章？此操作不可撤销。';
+  document.getElementById('confirmDeleteBtn').onclick = async function() {
+    closeModal();
+    try {
+      await api('/rest/v1/articles?id=in.(' + ids.join(',') + ')', { method: 'DELETE' });
+      toast('已删除 ' + ids.length + ' 篇', 'ok');
+      clearSelection();
+      loadArticles();
+    } catch (e) { toast('批量删除失败: ' + e.message, 'er'); }
+  };
+  document.getElementById('deleteModal').style.display = 'flex';
 }
 
 // ================ CRAWLER (WebSocket + Control) ================
