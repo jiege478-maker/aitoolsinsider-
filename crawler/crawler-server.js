@@ -532,6 +532,52 @@ app.get('/api/logs', (req, res) => {
   });
 });
 
+// POST /api/generate-sitemap — regenerate sitemap.xml from Supabase
+app.post('/api/generate-sitemap', async (req, res) => {
+  try {
+    const scriptPath = path.join(__dirname, '..', 'generate-sitemap.js');
+    const deploy = req.body?.deploy === true;
+
+    addLog('Generating sitemap from database...');
+    broadcastStatus();
+
+    const child = spawn('node', [scriptPath, deploy ? '--deploy' : ''], {
+      cwd: path.join(__dirname, '..'),
+      env: { ...process.env },
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    let output = '';
+    child.stdout.on('data', (data) => {
+      const text = data.toString();
+      output += text;
+      for (const line of text.split('\n').filter(Boolean)) {
+        addLog(`[SITEMAP] ${line}`);
+      }
+    });
+
+    child.stderr.on('data', (data) => {
+      const text = data.toString();
+      for (const line of text.split('\n').filter(Boolean)) {
+        addLog(`[SITEMAP:ERR] ${line}`);
+      }
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        addLog('[SITEMAP] sitemap.xml regenerated successfully');
+        res.json({ success: true, message: 'Sitemap regenerated', output });
+      } else {
+        addLog(`[SITEMAP] Failed with code ${code}`);
+        res.status(500).json({ success: false, message: `Process exited with code ${code}`, output });
+      }
+      broadcastStatus();
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // GET /api/hot-terms — returns live Google hot terms + static config
 app.get('/api/hot-terms', async (req, res) => {
   try {

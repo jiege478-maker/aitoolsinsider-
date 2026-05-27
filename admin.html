@@ -267,6 +267,15 @@ tr:hover td{background:#f8fafc}
     <button class="btn btn-s btn-xs" onclick="clearSelection()">取消选择</button>
   </div>
 
+  <!-- Sitemap Bar -->
+  <div style="background:#f0fdf4;border:1px solid #22c55e;border-radius:8px;padding:8px 16px;margin:10px 0;display:flex;align-items:center;gap:12px;font-size:13px">
+    <span style="color:#16a34a;font-weight:600">🗺️ Sitemap</span>
+    <span style="color:#64748b">数据库 <b id="sitemapDbCount">?</b> 篇 | Sitemap <b id="sitemapFileCount">?</b> 条</span>
+    <button class="btn btn-s btn-xs" onclick="regenerateSitemap()">重新生成</button>
+    <button class="btn btn-p btn-xs" onclick="regenerateSitemap(true)">生成并部署</button>
+    <span id="sitemapStatus" style="color:#64748b;font-size:12px"></span>
+  </div>
+
   <!-- Editor Form -->
   <div class="editor-form" id="editorForm" style="display:none">
     <h2 id="editorTitle">新建文章</h2>
@@ -689,6 +698,7 @@ function renderArticles(articles) {
       '<button class="btn btn-d btn-xs" onclick="confirmDelete('+a.id+')">🗑️</button></div></td></tr>';
   });
   document.getElementById('artBody').innerHTML=html;
+  checkSitemapStatus();
 }
 
 async function openEditor(id) {
@@ -986,6 +996,59 @@ async function batchDelete() {
     } catch (e) { toast('批量删除失败: ' + e.message, 'er'); }
   };
   document.getElementById('deleteModal').style.display = 'flex';
+}
+
+// ================ SITEMAP ================
+
+function regenerateSitemap(deploy) {
+  var btn = event.target;
+  var status = document.getElementById('sitemapStatus');
+  status.textContent = '生成中...';
+  btn.disabled = true;
+
+  fetch((localStorage.getItem('crawler_api_url') || 'http://localhost:3456') + '/api/generate-sitemap', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ deploy: !!deploy }),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      status.textContent = '✅ ' + new Date().toLocaleTimeString();
+      toast(deploy ? 'Sitemap 已生成并部署' : 'Sitemap 已重新生成', 'ok');
+      checkSitemapStatus();
+    } else {
+      status.textContent = '❌ ' + (data.message || '失败');
+      toast('Sitemap 生成失败: ' + (data.message || '未知错误'), 'er');
+    }
+  })
+  .catch(function(e) {
+    status.textContent = '❌ 连接失败';
+    toast('Sitemap 生成失败: 无法连接服务器 (' + e.message + ')', 'er');
+  })
+  .finally(function() {
+    btn.disabled = false;
+  });
+}
+
+function checkSitemapStatus() {
+  fetch('/sitemap.xml')
+    .then(function(r) { return r.text(); })
+    .then(function(xml) {
+      var count = (xml.match(/<url>/g) || []).length;
+      document.getElementById('sitemapFileCount').textContent = count;
+    })
+    .catch(function() {
+      document.getElementById('sitemapFileCount').textContent = '?';
+    });
+
+  api('/rest/v1/articles?published=eq.true&select=id&limit=0')
+    .then(function(data) {
+      document.getElementById('sitemapDbCount').textContent = Array.isArray(data) ? data.length : '?';
+    })
+    .catch(function() {
+      document.getElementById('sitemapDbCount').textContent = '?';
+    });
 }
 
 // ================ CRAWLER (WebSocket + Control) ================
