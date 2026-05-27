@@ -57,23 +57,41 @@ const DEDUP_FILE = path.join(__dirname, 'crawled-urls.json');
 // ============================================================
 
 const FEEDS = [
-  // AI companies first (highest quality)
+  // ===== AI Companies (highest quality) =====
   { url: 'https://openai.com/blog/feed.xml', name: 'openai' },
   { url: 'https://www.anthropic.com/feed.xml', name: 'anthropic' },
   { url: 'https://ai.googleblog.com/feeds/posts/default', name: 'google-ai' },
   { url: 'https://huggingface.co/blog/feed.xml', name: 'huggingface' },
   { url: 'https://ai.meta.com/blog/feed.xml', name: 'meta-ai' },
-  // Community
+  { url: 'https://stability.ai/blog/feed.xml', name: 'stability' },
+  { url: 'https://mistral.ai/feed.xml', name: 'mistral' },
+  { url: 'https://cohere.com/blog/feed.xml', name: 'cohere' },
+  { url: 'https://blog.langchain.dev/feed.xml', name: 'langchain' },
+  // ===== Tech News =====
+  { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', name: 'tc-ai' },
+  { url: 'https://www.theverge.com/ai-artificial-intelligence/rss.xml', name: 'verge-ai' },
+  { url: 'https://venturebeat.com/category/ai/feed/', name: 'vb-ai' },
+  { url: 'https://www.artificialintelligence-news.com/feed/', name: 'ai-news' },
+  // ===== Developer Community =====
   { url: 'https://medium.com/feed/tag/artificial-intelligence', name: 'medium-ai' },
-  { url: 'https://medium.com/feed/tag/ai', name: 'medium-ai' },
+  { url: 'https://medium.com/feed/tag/ai', name: 'medium-ai2' },
   { url: 'https://medium.com/feed/tag/machine-learning', name: 'medium-ml' },
+  { url: 'https://medium.com/feed/tag/generative-ai', name: 'medium-genai' },
+  { url: 'https://medium.com/feed/tag/deep-learning', name: 'medium-dl' },
+  { url: 'https://medium.com/feed/tag/computer-vision', name: 'medium-cv' },
+  { url: 'https://medium.com/feed/tag/llm', name: 'medium-llm' },
+  { url: 'https://medium.com/feed/tag/ai-agents', name: 'medium-agents' },
+  { url: 'https://medium.com/feed/tag/prompt-engineering', name: 'medium-pe' },
   { url: 'https://dev.to/feed/tag/ai', name: 'devto-ai' },
   { url: 'https://dev.to/feed/tag/machinelearning', name: 'devto-ml' },
-  { url: 'https://www.reddit.com/r/artificial/.rss', name: 'reddit-ai' },
-  { url: 'https://www.reddit.com/r/MachineLearning/.rss', name: 'reddit-ml' },
-  { url: 'https://www.analyticsvidhya.com/blog/feed/', name: 'av' },
-  { url: 'https://www.marktechpost.com/feed/', name: 'mtp' },
-  // Writing & Video focused
+  { url: 'https://dev.to/feed/tag/generativeai', name: 'devto-genai' },
+  { url: 'https://dev.to/feed/tag/artificialintelligence', name: 'devto-ai2' },
+  { url: 'https://dev.to/feed/tag/deeplearning', name: 'devto-dl' },
+  { url: 'https://dev.to/feed/tag/promptengineering', name: 'devto-pe' },
+  { url: 'https://dev.to/feed/tag/llm', name: 'devto-llm' },
+  { url: 'https://dev.to/feed/tag/aiagents', name: 'devto-agents' },
+  { url: 'https://dev.to/feed/tag/langchain', name: 'devto-langchain' },
+  // ===== Writing, Video, Content =====
   { url: 'https://dev.to/feed/tag/writing', name: 'devto-writing' },
   { url: 'https://dev.to/feed/tag/contentcreation', name: 'devto-content' },
   { url: 'https://dev.to/feed/tag/video', name: 'devto-video' },
@@ -81,6 +99,16 @@ const FEEDS = [
   { url: 'https://medium.com/feed/tag/ai-writing', name: 'medium-writing' },
   { url: 'https://medium.com/feed/tag/ai-video', name: 'medium-video' },
   { url: 'https://medium.com/feed/tag/content-creation', name: 'medium-content' },
+  // ===== AI News & Research =====
+  { url: 'https://www.analyticsvidhya.com/blog/feed/', name: 'av' },
+  { url: 'https://www.marktechpost.com/feed/', name: 'mtp' },
+  { url: 'https://www.reddit.com/r/artificial/.rss', name: 'reddit-ai' },
+  { url: 'https://www.reddit.com/r/MachineLearning/.rss', name: 'reddit-ml' },
+  { url: 'https://news.ycombinator.com/rss', name: 'hn' },
+  // ===== AI Tools & Product =====
+  { url: 'https://www.producthunt.com/feed?category=artificial-intelligence', name: 'ph-ai' },
+  { url: 'https://rss.beehiiv.com/feeds/emails/tldr-ai.xml', name: 'tldr-ai' },
+  { url: 'https://buttondown.com/ainews/rss', name: 'ainews' },
 ];
 
 // GitHub repos: search for AI tutorial repos
