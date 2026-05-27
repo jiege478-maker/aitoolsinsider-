@@ -506,6 +506,17 @@ function cleanContent($) {
   $('div:contains("Join the discussion"), div:contains("Leave a comment")').remove();
   // Remove bottom-of-page noise (template, create template, etc.)
   $('[class*="template"], [class*="create-post"], [class*="draft"]').remove();
+  // Remove author/social UI elements
+  $('[class*="avatar"], [class*="author-bio"], [class*="author-card"], [class*="author-info"], [class*="byline"]').remove();
+  $('[class*="follow"], [class*="subscribe"], [class*="bookmark"], [class*="upvote"], [class*="vote"], [class*="reaction"]').remove();
+  $('[class*="social"], [class*="sharing"], [class*="share-btn"], [class*="twitter-share"]').remove();
+  $('[class*="profile"], [class*="user-card"], [class*="user-info"], [class*="contributor"]').remove();
+  $('[class*="reading-time"], [class*="meta-data"], [class*="article-meta"], [class*="post-meta"]').remove();
+  $('[class*="tag-list"], [class*="post-tags"], [class*="article-tags"]').remove();
+  $('[data-testid*="avatar"], [data-testid*="follow"], [data-testid*="social"]').remove();
+  // Remove "Upvote" / "Follow" text buttons
+  $('button:contains("Upvote"), button:contains("Follow"), button:contains("upvote"), button:contains("follow")').remove();
+  $('a:contains("Follow"), a:contains("Subscribe")').remove();
 
   // Try common article selectors
   let article = $('article').first();
@@ -519,6 +530,11 @@ function cleanContent($) {
 
   // Clean remaining noise within the selected content
   article.find('script, style, iframe[src*="ads"], .ads, .ad, .social-share, .share').remove();
+  article.find('[class*="avatar"], [class*="author"], [class*="follow"], [class*="upvote"], [class*="vote"], [class*="reaction"]').remove();
+  article.find('[class*="social"], [class*="sharing"], [class*="bookmark"], [class*="profile"]').remove();
+  article.find('[class*="meta-data"], [class*="article-meta"], [class*="post-meta"], [class*="byline"]').remove();
+  // Strip avatar images
+  article.find('img[class*="avatar"], img[alt*="avatar"], img[alt*="photo"], img[class*="profile"]').remove();
 
   // Get clean HTML
   let html = article.html() || '';
@@ -851,7 +867,13 @@ async function fetchFeed(feedConfig) {
 // ============================================================
 
 async function scrapeContent(url) {
-  const browser = await chromium.launch({ headless: true });
+  const launchOpts = { headless: true };
+  if (PROXY_URL) {
+    const proxyHost = PROXY_URL.replace(/^https?:\/\//, '');
+    launchOpts.args = [`--proxy-server=${proxyHost}`];
+    console.log(`    [Playwright] proxy via ${proxyHost}`);
+  }
+  const browser = await chromium.launch(launchOpts);
   let result = { content: '', description: '', title: '' };
 
   try {
