@@ -271,9 +271,9 @@ tr:hover td{background:#f8fafc}
   <div style="background:#f0fdf4;border:1px solid #22c55e;border-radius:8px;padding:8px 16px;margin:10px 0;display:flex;align-items:center;gap:12px;font-size:13px">
     <span style="color:#16a34a;font-weight:600">🗺️ Sitemap</span>
     <span style="color:#64748b">数据库 <b id="sitemapDbCount">?</b> 篇 | Sitemap <b id="sitemapFileCount">?</b> 条</span>
-    <button class="btn btn-s btn-xs" onclick="regenerateSitemap()">重新生成</button>
-    <button class="btn btn-p btn-xs" onclick="regenerateSitemap(true)">生成并部署</button>
+    <button class="btn btn-s btn-xs" onclick="regenerateSitemap()">📥 下载最新</button>
     <span id="sitemapStatus" style="color:#64748b;font-size:12px"></span>
+    <span style="color:#94a3b8;font-size:11px;margin-left:auto">部署: node generate-sitemap.js --deploy</span>
   </div>
 
   <!-- Editor Form -->
@@ -1001,34 +1001,64 @@ async function batchDelete() {
 // ================ SITEMAP ================
 
 function regenerateSitemap(deploy) {
-  var btn = event.target;
   var status = document.getElementById('sitemapStatus');
-  status.textContent = '生成中...';
-  btn.disabled = true;
+  status.textContent = '读取文章中...';
 
-  fetch((localStorage.getItem('crawler_api_url') || 'http://localhost:3456') + '/api/generate-sitemap', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ deploy: !!deploy }),
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.success) {
-      status.textContent = '✅ ' + new Date().toLocaleTimeString();
-      toast(deploy ? 'Sitemap 已生成并部署' : 'Sitemap 已重新生成', 'ok');
+  api('/rest/v1/articles?published=eq.true&select=slug,title,updated_at')
+    .then(function(articles) {
+      if (!articles || !articles.length) {
+        status.textContent = '❌ 没有已发布的文章';
+        return;
+      }
+
+      var today = new Date().toISOString().slice(0, 10);
+      var xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+      var staticPages = [
+        { loc: 'https://www.toolrankly.com/', priority: '1.0', changefreq: 'weekly' },
+        { loc: 'https://www.toolrankly.com/about.html', priority: '0.3', changefreq: 'monthly' },
+        { loc: 'https://www.toolrankly.com/contact.html', priority: '0.3', changefreq: 'monthly' },
+        { loc: 'https://www.toolrankly.com/privacy.html', priority: '0.2', changefreq: 'monthly' },
+      ];
+      for (var i = 0; i < staticPages.length; i++) {
+        var p = staticPages[i];
+        xml += '  <url>\n    <loc>' + p.loc + '</loc>\n    <lastmod>' + today + '</lastmod>\n    <changefreq>' + p.changefreq + '</changefreq>\n    <priority>' + p.priority + '</priority>\n  </url>\n';
+      }
+
+      for (var i = 0; i < articles.length; i++) {
+        var a = articles[i];
+        var mod = (a.updated_at || '').slice(0, 10) || today;
+        xml += '  <url>\n    <loc>https://www.toolrankly.com/article?slug=' + encodeURIComponent(a.slug) + '</loc>\n    <lastmod>' + mod + '</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n';
+      }
+
+      xml += '</urlset>';
+
+      // Download the file
+      var blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var aEl = document.createElement('a');
+      aEl.href = url;
+      aEl.download = 'sitemap.xml';
+      document.body.appendChild(aEl);
+      aEl.click();
+      document.body.removeChild(aEl);
+      URL.revokeObjectURL(url);
+
+      status.textContent = '✅ 已下载 (' + (staticPages.length + articles.length) + ' 条 URL)';
+      toast('sitemap.xml 已下载，请覆盖项目根目录', 'ok');
+
+      if (deploy) {
+        status.textContent += ' → 请在终端运行: cd ' + window.location.origin.replace(/https?:\/\//,'') + ' && node generate-sitemap.js --deploy';
+        toast('请在服务器执行部署命令', 'ok');
+      }
+
       checkSitemapStatus();
-    } else {
-      status.textContent = '❌ ' + (data.message || '失败');
-      toast('Sitemap 生成失败: ' + (data.message || '未知错误'), 'er');
-    }
-  })
-  .catch(function(e) {
-    status.textContent = '❌ 连接失败';
-    toast('Sitemap 生成失败: 无法连接服务器 (' + e.message + ')', 'er');
-  })
-  .finally(function() {
-    btn.disabled = false;
-  });
+    })
+    .catch(function(e) {
+      status.textContent = '❌ ' + e.message;
+      toast('读取失败: ' + e.message, 'er');
+    });
 }
 
 function checkSitemapStatus() {
@@ -1042,7 +1072,7 @@ function checkSitemapStatus() {
       document.getElementById('sitemapFileCount').textContent = '?';
     });
 
-  api('/rest/v1/articles?published=eq.true&select=id&limit=0')
+  api('/rest/v1/articles?published=eq.true&select=id')
     .then(function(data) {
       document.getElementById('sitemapDbCount').textContent = Array.isArray(data) ? data.length : '?';
     })

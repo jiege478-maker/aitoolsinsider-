@@ -10,7 +10,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const SITEMAP_PATH = path.join(__dirname, 'sitemap.xml');
-const SITE_URL = 'https://toolrankly.com';
+const SITE_URL = 'https://www.toolrankly.com';
 
 // 读取 .env
 const envFile = path.join(__dirname, 'crawler', '.env');
