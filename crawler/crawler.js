@@ -61,12 +61,10 @@ const FEEDS = [
   { url: 'https://openai.com/blog/feed.xml', name: 'openai' },
   { url: 'https://www.anthropic.com/feed.xml', name: 'anthropic' },
   { url: 'https://ai.googleblog.com/feeds/posts/default', name: 'google-ai' },
-  { url: 'https://huggingface.co/blog/feed.xml', name: 'huggingface' },
   { url: 'https://ai.meta.com/blog/feed.xml', name: 'meta-ai' },
   { url: 'https://stability.ai/blog/feed.xml', name: 'stability' },
   { url: 'https://mistral.ai/feed.xml', name: 'mistral' },
   { url: 'https://cohere.com/blog/feed.xml', name: 'cohere' },
-  { url: 'https://blog.langchain.dev/feed.xml', name: 'langchain' },
   // ===== Tech News =====
   { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', name: 'tc-ai' },
   { url: 'https://www.theverge.com/ai-artificial-intelligence/rss.xml', name: 'verge-ai' },
@@ -84,28 +82,17 @@ const FEEDS = [
   { url: 'https://dev.to/feed/tag/ai', name: 'devto-ai' },
   { url: 'https://dev.to/feed/tag/machinelearning', name: 'devto-ml' },
   { url: 'https://dev.to/feed/tag/generativeai', name: 'devto-genai' },
-  { url: 'https://dev.to/feed/tag/deeplearning', name: 'devto-dl' },
   { url: 'https://dev.to/feed/tag/promptengineering', name: 'devto-pe' },
   { url: 'https://dev.to/feed/tag/llm', name: 'devto-llm' },
   { url: 'https://dev.to/feed/tag/aiagents', name: 'devto-agents' },
-  { url: 'https://dev.to/feed/tag/langchain', name: 'devto-langchain' },
-  { url: 'https://dev.to/feed/tag/tutorial', name: 'devto-tutorial' },
   { url: 'https://dev.to/feed/tag/writing', name: 'devto-writing' },
-  { url: 'https://dev.to/feed/tag/video', name: 'devto-video' },
   { url: 'https://dev.to/feed/tag/contentcreation', name: 'devto-content' },
   { url: 'https://medium.com/feed/tag/artificial-intelligence', name: 'medium-ai' },
   { url: 'https://medium.com/feed/tag/generative-ai', name: 'medium-genai' },
-  { url: 'https://medium.com/feed/tag/llm', name: 'medium-llm' },
   { url: 'https://medium.com/feed/tag/ai-agents', name: 'medium-agents' },
   { url: 'https://medium.com/feed/tag/prompt-engineering', name: 'medium-pe' },
   { url: 'https://medium.com/feed/tag/ai-writing', name: 'medium-writing' },
   { url: 'https://medium.com/feed/tag/ai-video', name: 'medium-video' },
-  // ===== Academic & Research =====
-  { url: 'https://export.arxiv.org/rss/cs.AI', name: 'arxiv-ai' },
-  { url: 'https://export.arxiv.org/rss/cs.LG', name: 'arxiv-ml' },
-  { url: 'https://export.arxiv.org/rss/cs.CL', name: 'arxiv-nlp' },
-  { url: 'https://export.arxiv.org/rss/cs.CV', name: 'arxiv-cv' },
-  { url: 'https://paperswithcode.com/research.rss', name: 'pwc' },
   // ===== Community & Discussion =====
   { url: 'https://www.reddit.com/r/artificial/.rss', name: 'reddit-ai' },
   { url: 'https://www.reddit.com/r/MachineLearning/.rss', name: 'reddit-ml' },
@@ -116,13 +103,12 @@ const FEEDS = [
   { url: 'https://www.comet.com/blog/feed/', name: 'comet' },
 ];
 
-// GitHub repos: search for AI tutorial repos
+// GitHub repos: search for AI tool repos
 const GITHUB_SEARCH_QUERIES = [
-  'topic:ai+topic:tutorial+stars:>100',
-  'topic:machine-learning+tutorial+stars:>200',
-  'topic:deep-learning+tutorial+stars:>200',
-  'topic:llm+tutorial+stars:>100',
-  'topic:artificial-intelligence+tutorial+stars:>100',
+  'topic:ai+topic:tool+stars:>100',
+  'topic:ai+topic:productivity+stars:>200',
+  'topic:ai-tools+stars:>100',
+  'topic:artificial-intelligence+topic:tools+stars:>100',
 ];
 
 const GITHUB_API_HEADERS = {
@@ -442,6 +428,60 @@ function isSpam(title, content) {
     return true; // Not clearly AI-related
   }
   return spamPatterns.some(p => p.test(text));
+}
+
+/**
+ * Detect tutorial/deployment/research content unsuitable for a tool review site.
+ * Blocks deployment guides, fine-tuning tutorials, research paper announcements, etc.
+ */
+function isTutorialOrDeployment(title, content) {
+  const t = (title || '').toLowerCase();
+  const c = (content || '').toLowerCase();
+  const text = t + ' ' + c.substring(0, 2000);
+
+  // Deployment patterns
+  const deployPatterns = [
+    /deploy\s+(.*?)\s+on\s+(aws|azure|gcp|cloud|kubernetes|docker|k8s)/i,
+    /deploying\s+(.*?)\s+(on|to|using)\s+(aws|azure|gcp|cloud)/i,
+    /deployment\s+(guide|tutorial|steps)/i,
+    /run\s+(.*?)\s+on\s+(aws|azure|gcp)\s/,
+    /host\s+(.*?)\s+on\s+(aws|azure|gcp)/i,
+  ];
+
+  for (const p of deployPatterns) {
+    if (p.test(text)) return true;
+  }
+
+  // Check title for tutorial/deployment/research indicators
+  const titlePatterns = [
+    /^(how to|guide to|tutorial|building|creating|implementing|training|fine.?tuning)/i,
+    /(fine.?tun(e|ing)|fine.tun(e|ing))\s+(.*?)\s+(model|llm|gpt|bert|t5|transformer)/i,
+    /(fine.?tun(e|ing)|fine.tun(e|ing))\s+(.*?)\s+on\s+(custom|dataset|data|aws|azure|gcp)/i,
+    /getting\s+started\s+with/i,
+    /from\s+scratch(\s+in|\s+using|\s+with)/i,
+    /step[-\s]by[-\s]step/i,
+    /comprehensive\s+guide/i,
+    /introducing\s+\w+\s+\d+(\.\d+)?[:\s]/i,
+  ];
+
+  for (const p of titlePatterns) {
+    if (p.test(t)) return true;
+  }
+
+  // Research paper patterns (arXiv-style titles)
+  const researchPatterns = [
+    /^[\w\s]+:\s[\w\s]+(model|approach|method|framework|dataset|benchmark|system|architecture)$/i,
+    /^toward|towards|on\s+the\s+(role|impact|effect|importance)\s+of/i,
+    /^(a\s+)?survey\s+of/i,
+    /^(a\s+)?comprehensive\s+(study|analysis|survey|review|evaluation)\s+of/i,
+    /(model|system|approach|method|framework)\s+for\s+(.*?)(using|with)\s+(transformer|attention|diffusion|gan|vae|rn)/i,
+  ];
+
+  for (const p of researchPatterns) {
+    if (p.test(t)) return true;
+  }
+
+  return false;
 }
 
 /**
@@ -1255,6 +1295,13 @@ async function main() {
       continue;
     }
 
+    // Tutorial/deployment/research content filter (not suitable for tool review site)
+    if (isTutorialOrDeployment(title, scraped.content)) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — tutorial/deployment/research`);
+      skipped++;
+      continue;
+    }
+
     // Score hot terms
     const hotScore = scoreHotTerms(title, scraped.content);
     if (HOT_TERMS_ONLY && hotScore.score === 0) {
@@ -1340,7 +1387,7 @@ async function main() {
     }
 
     // Build tags with SEO keywords
-    const tags = ['ai', 'tutorial'];
+    const tags = ['ai', 'ai-tools'];
     if (focusKeyword) tags.push(focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
     tags.push(feedConfig.name.replace(/[0-9]/g, ''));
     if (hotScore.matchedTerm && hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-') !== focusKeyword?.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
@@ -1381,13 +1428,13 @@ async function main() {
   }
 
   // ============================================================
-  // Process GitHub tutorial repos
+  // Process GitHub tool repos
   // ============================================================
   if (!SOURCE_FILTER || SOURCE_FILTER === 'github') {
     console.log('\n--- GitHub Tutorial Repos ---\n');
     try {
       const repos = await searchGitHubRepos();
-      console.log(`Found ${repos.length} potential tutorial repos\n`);
+      console.log(`Found ${repos.length} potential tool repos\n`);
 
       for (const repoInfo of repos) {
         if (processed >= MAX_ARTICLES) break;
@@ -1440,6 +1487,11 @@ async function main() {
           skipped++;
           continue;
         }
+        if (isTutorialOrDeployment(repoInfo.name, readmeHtml)) {
+          console.log(`  [SKIP] Tutorial/deployment README`);
+          skipped++;
+          continue;
+        }
 
         const title = `${repoInfo.name}: ${repoInfo.description}`;
         const hotScore = scoreHotTerms(title, readmeHtml);
@@ -1472,7 +1524,7 @@ async function main() {
         }
 
         // Build tags with SEO keywords
-        const tags = ['ai', 'tutorial', 'github'];
+        const tags = ['ai', 'ai-tools', 'github'];
         if (focusKeyword) tags.push(focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
         if (hotScore.matchedTerm && hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-') !== focusKeyword?.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
           tags.push(hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
