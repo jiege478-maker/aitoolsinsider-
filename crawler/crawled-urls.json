@@ -443,5 +443,170 @@
     "url": "https://dev.to/gandalfthegato/ai-dewatermark-tools-how-to-remove-watermarks-from-photos-you-own-5",
     "title": "AI dewatermark tools: how to remove watermarks from photos you own",
     "date": "2026-05-27T00:17:57.380Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/agent-glossary",
+    "title": "Harness, Scaffold, and the AI Agent Terms Worth Getting Right",
+    "date": "2026-05-27T00:49:31.824Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ibm-research/open-agent-leaderboard",
+    "title": "The Open Agent Leaderboard",
+    "date": "2026-05-27T00:49:32.333Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/Dharma-AI/specialization-beats-scale",
+    "title": "Specialization Beats Scale: A Strategic Variable Most AI Procurement Decisions Overlook",
+    "date": "2026-05-27T00:49:32.902Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/deepseekv4",
+    "title": "DeepSeek-V4: a million-token context that agents can actually use",
+    "date": "2026-05-27T00:55:13.204Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ServiceNow-AI/correctness-before-corrections",
+    "title": "vLLM V0 to V1: Correctness Before Corrections in RL",
+    "date": "2026-05-27T00:55:15.902Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ibm-granite/granite-4-1",
+    "title": "Granite 4.1 LLMs: How They’re Built",
+    "date": "2026-05-27T00:55:18.700Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/openai-privacy-filter-web-apps",
+    "title": "How to build scalable web apps with OpenAI's Privacy Filter",
+    "date": "2026-05-27T00:55:21.851Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/tiiuae/qimma-arabic-leaderboard",
+    "title": "QIMMA قِمّة ⛰: A Quality-First Arabic LLM Leaderboard",
+    "date": "2026-05-27T00:55:25.210Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/cybersecurity-openness",
+    "title": "AI and the Future of Cybersecurity: Why Openness Matters",
+    "date": "2026-05-27T00:55:28.370Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ibm-research/vakra-benchmark-analysis",
+    "title": "Inside VAKRA: Reasoning, Tool Use, and Failure Modes of Agents",
+    "date": "2026-05-27T00:55:30.681Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/inference-providers-deepinfra",
+    "title": "DeepInfra on Hugging Face Inference Providers 🔥",
+    "date": "2026-05-27T00:55:33.160Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/train-multimodal-sentence-transformers",
+    "title": "Training and Finetuning Multimodal Embedding & Reranker Models with Sentence Transformers",
+    "date": "2026-05-27T00:55:36.530Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/nvidia/nemotron-3-nano-omni-multimodal-intelligence",
+    "title": "Introducing NVIDIA Nemotron 3 Nano Omni: Long-Context Multimodal Intelligence for Documents, Audio and Video Agents",
+    "date": "2026-05-27T00:55:38.970Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ibm-research/assetopsbench-playground-on-hugging-face",
+    "title": "AssetOpsBench: Bridging the Gap Between AI Agent Benchmarks and Industrial Reality",
+    "date": "2026-05-27T01:11:58.917Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ibm-research/cuga-on-hugging-face",
+    "title": "CUGA on Hugging Face: Democratizing Configurable AI Agents",
+    "date": "2026-05-27T01:12:01.778Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/futurebench",
+    "title": "Back to The Future: Evaluating AI Agents on Predicting Future Events",
+    "date": "2026-05-27T01:12:03.917Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/huggingface/one-year-since-the-deepseek-moment-blog-3",
+    "title": "The Future of the Global Open-Source AI Ecosystem: From DeepSeek to AI+",
+    "date": "2026-05-27T01:12:06.338Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/huggingface/one-year-since-the-deepseek-moment-blog-2",
+    "title": "Architectural Choices in China's Open-Source AI Ecosystem: Building Beyond DeepSeek",
+    "date": "2026-05-27T01:12:09.265Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/deepseek-r1-aws",
+    "title": "How to deploy and fine-tune DeepSeek models on AWS",
+    "date": "2026-05-27T01:12:11.765Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/custom-cuda-kernels-agent-skills",
+    "title": "Custom Kernels for All from Codex and Claude",
+    "date": "2026-05-27T01:12:13.914Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/upskill",
+    "title": "We Got Claude to Build CUDA Kernels and teach open models!",
+    "date": "2026-05-27T01:12:17.276Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/hf-skills-training",
+    "title": "We Got Claude to Fine-Tune an Open Source LLM",
+    "date": "2026-05-27T01:12:19.736Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/claude-and-mcp",
+    "title": "Generate Images with Claude and Hugging Face",
+    "date": "2026-05-27T01:12:22.447Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/tiiuae/emirati-benchmarks",
+    "title": "Alyah ⭐️: Toward Robust Evaluation of Emirati Dialect Capabilities in Arabic LLMs",
+    "date": "2026-05-27T01:12:24.756Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ServiceNow-AI/aprielguard",
+    "title": "AprielGuard: A Guardrail for Safety and Adversarial Robustness in Modern LLM Systems",
+    "date": "2026-05-27T01:12:27.486Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/anylanguagemodel",
+    "title": "Introducing AnyLanguageModel: One API for Local and Remote LLMs on Apple Platforms",
+    "date": "2026-05-27T01:12:30.167Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/ServiceNow-AI/sygra-data-gen-framework",
+    "title": "SyGra: The One-Stop Framework for Building Data for LLMs and SLMs",
+    "date": "2026-05-27T01:12:32.657Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/faster-transformers",
+    "title": "Tricks from OpenAI gpt-oss YOU 🫵 can use with transformers",
+    "date": "2026-05-27T01:12:35.227Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/togethercomputer/together-ft",
+    "title": "Fine-tune Any LLM from the Hugging Face Hub with Together AI",
+    "date": "2026-05-27T01:12:38.136Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/jupyter-agent-2",
+    "title": "Jupyter Agents: training LLMs to reason with notebooks",
+    "date": "2026-05-27T01:12:42.097Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/textquests",
+    "title": "TextQuests: How Good are LLMs at Text-Based Video Games?",
+    "date": "2026-05-27T01:12:46.186Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/filbench",
+    "title": "🇵🇭 FilBench - Can LLMs Understand and Generate Filipino?",
+    "date": "2026-05-27T01:12:49.877Z"
+  },
+  {
+    "url": "https://huggingface.co/blog/welcome-openai-gpt-oss",
+    "title": "Welcome GPT OSS, the new open-source model family from OpenAI!",
+    "date": "2026-05-27T01:12:53.217Z"
   }
 ]

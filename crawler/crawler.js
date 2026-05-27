@@ -101,14 +101,24 @@ const FEEDS = [
   { url: 'https://www.producthunt.com/feed?category=artificial-intelligence', name: 'ph-ai' },
   { url: 'https://neptune.ai/blog/feed', name: 'neptune' },
   { url: 'https://www.comet.com/blog/feed/', name: 'comet' },
+  // ===== AI Tutorials & Learning =====
+  { url: 'https://www.freecodecamp.org/news/tag/artificial-intelligence/rss/', name: 'fcc-ai' },
+  { url: 'https://www.kdnuggets.com/feed', name: 'kdnuggets' },
+  { url: 'https://machinelearningmastery.com/blog/feed/', name: 'ml-mastery' },
+  { url: 'https://blog.paperspace.com/feed/', name: 'paperspace' },
+  { url: 'https://www.assemblyai.com/blog/rss/', name: 'assemblyai' },
+  { url: 'https://blog.langchain.dev/feed/', name: 'langchain' },
+  { url: 'https://www.pinecone.io/blog/feed.xml', name: 'pinecone' },
+  { url: 'https://huggingface.co/blog/feed.xml', name: 'huggingface-blog' },
 ];
 
-// GitHub repos: search for AI tool repos
+// GitHub repos: search for AI tutorial repos
 const GITHUB_SEARCH_QUERIES = [
-  'topic:ai+topic:tool+stars:>100',
-  'topic:ai+topic:productivity+stars:>200',
-  'topic:ai-tools+stars:>100',
-  'topic:artificial-intelligence+topic:tools+stars:>100',
+  'topic:ai+topic:tutorial+stars:>50',
+  'topic:machine-learning+topic:tutorial+stars:>100',
+  'topic:deep-learning+topic:tutorial+stars:>100',
+  'topic:llm+topic:tutorial+stars:>50',
+  'topic:artificial-intelligence+topic:tutorial+stars:>100',
 ];
 
 const GITHUB_API_HEADERS = {
@@ -123,7 +133,7 @@ const GITHUB_API_HEADERS = {
 const CATEGORIES = [
   { id: 1, name: 'Writing', keywords: ['writing', 'write', 'essay', 'content', 'copywriting', 'blog', 'grammar', 'paraphraser', 'storytelling', 'creative writing', 'article writer', 'text generation', 'nlp', 'natural language', 'language model', 'summarization', 'translation', 'document', 'chatbot', 'conversation', 'semantic', 'sentiment', 'linguistics', 'corpus'] },
   { id: 2, name: 'Image', keywords: ['image', 'photo', 'stable diffusion', 'midjourney', 'dall-e', 'dalle', 'art', 'design', 'visual', 'image generation', 'generate image', 'ai art', 'illustration', 'photo editing', 'computer vision', 'object detection', 'segmentation', 'generative adversarial', 'vae', 'diffusion model', 'style transfer', 'super resolution', 'image recognition', 'captioning', 'face recognition'] },
-  { id: 3, name: 'Coding', keywords: ['programming', 'developer', 'github copilot', 'copilot', 'cursor', 'api', 'web dev', 'frontend', 'backend', 'full stack', 'open source', 'sdk', 'debug', 'deploy', 'software development', 'agent', 'framework', 'library', 'tensorflow', 'pytorch', 'code example', 'codebase', 'implementation', 'import', 'dataset', 'algorithm', 'notebook', 'code', 'coding', 'deep learning', 'neural network', 'machine learning'] },
+  { id: 3, name: 'Coding', keywords: ['programming', 'developer', 'github copilot', 'copilot', 'cursor', 'api', 'web dev', 'frontend', 'backend', 'full stack', 'open source', 'sdk', 'debug', 'deploy', 'software development', 'agent', 'framework', 'library', 'tensorflow', 'pytorch', 'code example', 'codebase', 'implementation', 'import', 'dataset', 'algorithm', 'notebook', 'code', 'coding', 'deep learning', 'neural network', 'machine learning', 'tutorial', 'guide', 'how-to', 'getting started', 'course', 'lesson', 'learn', 'walkthrough', 'hands-on'] },
   { id: 4, name: 'Video', keywords: ['video', 'movie', 'film', 'animation', 'editing', 'screen record', 'motion', 'premiere', 'after effects', 'video generation', 'tiktok', 'youtube', 'render', 'video understanding', 'scene', 'multimodal', 'video editing', 'video classification'] },
   { id: 5, name: 'Productivity', keywords: ['productivity', 'workflow', 'automation', 'meeting', 'note', 'calendar', 'task', 'schedule', 'project management', 'email', 'organization', 'efficiency', 'time management', 'rag', 'retrieval augmented', 'knowledge base', 'recommendation', 'optimization', 'pipeline', 'integration', 'database'] },
 ];
@@ -371,6 +381,9 @@ function isAiRelevant(title, description, topics) {
   // Must have AI keywords in the title or description
   const titleAiKeywords = /ai|artificial.intelligence|machine.learning|deep.learning|llm|gpt|chatgpt|chat.?gpt|neural|prompt|agent|bot|nlp|computer.vision|tensorflow|pytorch|algorithm|stable.diffusion|midjourney|dalle|openai|anthropic|claude|gemini|llama|mistral|copilot|langchain|hugging.?face|gradio|generative|model|training|fine.?tune|RAG|embedding|vector|transformer|diffusion/i;
   if (titleAiKeywords.test(titleLower)) return true;
+  // Tutorial/learning keywords also count as AI-relevant for a tutorial site
+  const tutorialKeywords = /tutorial|guide|how.to|learn|course|lesson|walkthrough|hands.?on|getting.?started|from.?scratch|step.?by.?step/i;
+  if (tutorialKeywords.test(titleLower)) return true;
   // Title-only fallback for very common terms
   const titleCommonAI = /chat.?gpt|gpt.?4|gpt4|gpt.?3|dalle|midjourney|stable.?diffusion|claude|gemini|llama|mistral|copilot|openai|anthropic|hugging.?face/i;
   return titleCommonAI.test(titleLower);
@@ -431,8 +444,47 @@ function isSpam(title, content) {
 }
 
 /**
- * Detect tutorial/deployment/research content unsuitable for a tool review site.
- * Blocks deployment guides, fine-tuning tutorials, research paper announcements, etc.
+ * Detect tutorial-type content and give it a priority boost.
+ * Our site focuses on AI tutorials, so these should rank higher.
+ */
+function isTutorialContent(title, content) {
+  const t = (title || '').toLowerCase();
+  const c = (content || '').toLowerCase();
+  const text = t + ' ' + c.substring(0, 1000);
+
+  const tutorialPatterns = [
+    /^(how to|how i|how we|how you|guide to|learn|build|create|make|master|understand|implement|setup|set up|getting started|step by step|step-by-step)/i,
+    /tutorial/i,
+    /walkthrough/i,
+    /hands.?on/i,
+    /beginner.?friendly/i,
+    /from.?scratch/i,
+    /comprehensive.?guide/i,
+    /practical.?guide/i,
+    /complete.?guide/i,
+    /tips?\s+(for|to|and)/i,
+    /best.?practices?/i,
+    /cheat.?sheet/i,
+    /quick.?start/i,
+    /examples?\s+(with|using|in|of)/i,
+    /how\s+to\s+(use|build|create|make|train|deploy|set.?up|configure|integrate|implement)/i,
+  ];
+
+  let score = 0;
+  for (const p of tutorialPatterns) {
+    if (p.test(t)) score += 2;
+    else if (p.test(c)) score += 1;
+  }
+
+  // Bonus for title patterns that strongly indicate tutorial content
+  if (/\b(guide|tutorial|how to)\b/i.test(t)) score += 3;
+
+  return score >= 3;
+}
+
+/**
+ * Detect deployment guides, research papers, and other content that's not useful
+ * even for an AI tutorial site. Kept for reference but currently not called.
  */
 function isTutorialOrDeployment(title, content) {
   const t = (title || '').toLowerCase();
@@ -1295,12 +1347,9 @@ async function main() {
       continue;
     }
 
-    // Tutorial/deployment/research content filter (not suitable for tool review site)
-    if (isTutorialOrDeployment(title, scraped.content)) {
-      console.log(`  [SKIP] ${title.substring(0, 60)} — tutorial/deployment/research`);
-      skipped++;
-      continue;
-    }
+    // Tutorial content gets a priority boost (our site is an AI tutorial site)
+    const tutorialBoost = isTutorialContent(title, scraped.content) ? 50 : 0;
+    const isTutorial = tutorialBoost > 0;
 
     // Score hot terms
     const hotScore = scoreHotTerms(title, scraped.content);
@@ -1320,6 +1369,8 @@ async function main() {
       contentHtml,
       feedConfig,
       hotScore,
+      tutorialBoost,
+      isTutorial,
       url,
       title,
       pubDate: extractDate(item),
@@ -1334,8 +1385,8 @@ async function main() {
   // PHASE 4: Priority sort & upload
   // ============================================================
 
-  // Sort by hot term score descending (highest priority first)
-  articleQueue.sort((a, b) => b.hotScore.score - a.hotScore.score);
+  // Sort by hot term score + tutorial boost descending (highest priority first)
+  articleQueue.sort((a, b) => (b.hotScore.score + b.tutorialBoost) - (a.hotScore.score + a.tutorialBoost));
 
   console.log(`--- Upload Queue (sorted by hot term priority) ---\n`);
 
@@ -1368,7 +1419,7 @@ async function main() {
     console.log(`  Category: ${catName}`);
     console.log(`  Slug: ${slug} (${slug.length} chars)`);
     console.log(`  Focus keyword: ${focusKeyword || '(none)'}`);
-    console.log(`  Hot term score: ${hotScore.score}`);
+    console.log(`  Hot term score: ${hotScore.score} | Tutorial boost: ${tutorialBoost} | Total: ${hotScore.score + tutorialBoost}`);
     console.log(`  Description: ${description.substring(0, 100)}...`);
 
     // Dedup check: slug exists in DB
@@ -1387,7 +1438,7 @@ async function main() {
     }
 
     // Build tags with SEO keywords
-    const tags = ['ai', 'ai-tools'];
+    const tags = ['ai', 'ai-tutorial'];
     if (focusKeyword) tags.push(focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
     tags.push(feedConfig.name.replace(/[0-9]/g, ''));
     if (hotScore.matchedTerm && hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-') !== focusKeyword?.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
@@ -1487,11 +1538,8 @@ async function main() {
           skipped++;
           continue;
         }
-        if (isTutorialOrDeployment(repoInfo.name, readmeHtml)) {
-          console.log(`  [SKIP] Tutorial/deployment README`);
-          skipped++;
-          continue;
-        }
+        // Tutorial content gets a priority boost for GitHub repos too
+        const repoIsTutorial = isTutorialContent(repoInfo.name, readmeHtml);
 
         const title = `${repoInfo.name}: ${repoInfo.description}`;
         const hotScore = scoreHotTerms(title, readmeHtml);
@@ -1524,7 +1572,7 @@ async function main() {
         }
 
         // Build tags with SEO keywords
-        const tags = ['ai', 'ai-tools', 'github'];
+        const tags = ['ai', 'ai-tutorial', 'github'];
         if (focusKeyword) tags.push(focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
         if (hotScore.matchedTerm && hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-') !== focusKeyword?.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
           tags.push(hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
