@@ -637,6 +637,26 @@ function cleanContent($) {
   // Remove excessive whitespace
   html = html.replace(/\n{3,}/g, '\n\n');
 
+  // ===== Sanitize HTML for safe frontend display =====
+  // Strip SVG elements (cause layout overflow, not renderable without CSS)
+  html = html.replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, '');
+  // Strip <source> tags (void elements, meaningless without parent <picture>)
+  html = html.replace(/<source[^>]*>/gi, '');
+  // Strip interactive/UI elements
+  html = html.replace(/<button[^>]*>[\s\S]*?<\/button>/gi, '');
+  html = html.replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '');
+  // Strip inline event handlers
+  html = html.replace(/\s(on\w+)="[^"]*"/gi, '');
+  // Strip ARIA attributes
+  html = html.replace(/\s(aria-\w+)="[^"]*"/gi, '');
+  html = html.replace(/\srole="[^"]*"/gi, '');
+  // Strip Tailwind/utility classes (meaningless without the framework CSS)
+  html = html.replace(/\sclass="[^"]*"/gi, '');
+  // Strip empty <picture> wrappers after source removal
+  html = html.replace(/<picture[^>]*>\s*<\/picture>/gi, '');
+  // Remove empty paragraphs created by stripping
+  html = html.replace(/<p[^>]*>\s*<\/p>/gi, '');
+
   // Limit content length (prevent absurdly long articles)
   if (html.length > 50000) {
     html = html.substring(0, 50000) + '<p><em>Content truncated...</em></p>';
