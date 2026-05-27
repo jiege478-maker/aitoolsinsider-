@@ -1,5 +1,42 @@
 {
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/articles/best-ai-image-generators-2026",
+      "destination": "/?category=image",
+      "permanent": true
+    },
+    {
+      "source": "/articles/gpt-5-5-vs-claude-opus-4-7",
+      "destination": "/?s=claude+opus",
+      "permanent": true
+    },
+    {
+      "source": "/articles/best-ai-writing-tools-2026",
+      "destination": "/?category=writing",
+      "permanent": true
+    },
+    {
+      "source": "/articles/best-ai-coding-tools-2026",
+      "destination": "/?category=coding",
+      "permanent": true
+    },
+    {
+      "source": "/articles/ai-video-generators-2026-comparison",
+      "destination": "/?category=video",
+      "permanent": true
+    },
+    {
+      "source": "/articles/chatgpt-vs-gemini-2026",
+      "destination": "/?s=chatgpt+gemini",
+      "permanent": true
+    },
+    {
+      "source": "/articles/:slug",
+      "destination": "/?s=:slug",
+      "permanent": true
+    }
+  ],
   "trailingSlash": false,
   "headers": [
     {

@@ -73,6 +73,14 @@ const FEEDS = [
   { url: 'https://www.reddit.com/r/MachineLearning/.rss', name: 'reddit-ml' },
   { url: 'https://www.analyticsvidhya.com/blog/feed/', name: 'av' },
   { url: 'https://www.marktechpost.com/feed/', name: 'mtp' },
+  // Writing & Video focused
+  { url: 'https://dev.to/feed/tag/writing', name: 'devto-writing' },
+  { url: 'https://dev.to/feed/tag/contentcreation', name: 'devto-content' },
+  { url: 'https://dev.to/feed/tag/video', name: 'devto-video' },
+  { url: 'https://dev.to/feed/tag/tutorial', name: 'devto-tutorial' },
+  { url: 'https://medium.com/feed/tag/ai-writing', name: 'medium-writing' },
+  { url: 'https://medium.com/feed/tag/ai-video', name: 'medium-video' },
+  { url: 'https://medium.com/feed/tag/content-creation', name: 'medium-content' },
 ];
 
 // GitHub repos: search for AI tutorial repos
@@ -104,6 +112,38 @@ const CATEGORIES = [
 const ALL_KEYWORDS = CATEGORIES.flatMap(c => c.keywords);
 
 // ============================================================
+// GOOGLE AI HOT TERMS (May 2026)
+// ============================================================
+
+const HOT_TERMS = [
+  { term: 'AI Agent', weight: 30, slugKeyword: 'ai-agent' },
+  { term: 'DeepSeek', weight: 25, slugKeyword: 'deepseek' },
+  { term: 'Claude', weight: 20, slugKeyword: 'claude' },
+  { term: 'ChatGPT', weight: 20, slugKeyword: 'chatgpt' },
+  { term: 'Gemini', weight: 18, slugKeyword: 'gemini' },
+  { term: 'Perplexity', weight: 15, slugKeyword: 'perplexity' },
+  { term: 'Copilot', weight: 15, slugKeyword: 'copilot' },
+  { term: 'Midjourney', weight: 12, slugKeyword: 'midjourney' },
+  { term: 'Stable Diffusion', weight: 12, slugKeyword: 'stable-diffusion' },
+  { term: 'Multimodal AI', weight: 12, slugKeyword: 'multimodal-ai' },
+  { term: 'AI Code Generation', weight: 12, slugKeyword: 'ai-code-generation' },
+  { term: 'LLM', weight: 10, slugKeyword: 'llm' },
+  { term: 'OpenAI', weight: 10, slugKeyword: 'openai' },
+  { term: 'Anthropic', weight: 10, slugKeyword: 'anthropic' },
+  { term: 'RAG', weight: 8, slugKeyword: 'rag' },
+  { term: 'fine-tuning', weight: 8, slugKeyword: 'fine-tuning' },
+  { term: 'vector database', weight: 8, slugKeyword: 'vector-database' },
+  { term: 'prompt engineering', weight: 8, slugKeyword: 'prompt-engineering' },
+  { term: 'AI video', weight: 8, slugKeyword: 'ai-video' },
+  { term: 'AI image', weight: 8, slugKeyword: 'ai-image' },
+];
+
+const HOT_TERMS_ONLY = process.env.HOT_TERMS_ONLY === 'true';
+
+// Concurrency: number of pages to scrape simultaneously
+const CONCURRENCY = parseInt(process.env.CONCURRENCY || '10', 10);
+
+// ============================================================
 // DEDUP
 // ============================================================
 
@@ -124,15 +164,133 @@ function isAlreadyCrawled(url, crawled) {
 }
 
 // ============================================================
-// SLUG GENERATION
+// SEO FUNCTIONS
 // ============================================================
 
+function scoreHotTerms(title, content) {
+  const titleLower = (title || '').toLowerCase();
+  const contentLower = (content || '').toLowerCase();
+  let bestScore = 0;
+  let bestMatch = null;
+
+  for (const ht of HOT_TERMS) {
+    const termLower = ht.term.toLowerCase();
+    let score = 0;
+
+    // Title match gets 2x weight
+    if (titleLower.includes(termLower)) {
+      score += ht.weight * 2;
+    }
+    // Content match gets 1x weight
+    const contentIdx = contentLower.indexOf(termLower);
+    if (contentIdx !== -1) {
+      score += ht.weight;
+      // Bonus: if matched early in content (first 500 chars), extra weight
+      if (contentIdx < 500) score += Math.round(ht.weight * 0.5);
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = ht;
+    }
+  }
+
+  return {
+    score: bestScore,
+    matchedTerm: bestMatch ? bestMatch.term : null,
+    slugKeyword: bestMatch ? bestMatch.slugKeyword : null,
+    focusKeyword: bestMatch ? bestMatch.term : null,
+  };
+}
+
+function extractFocusKeyword(title, content, hotScore) {
+  // If hot terms matched, use the highest-scored one
+  if (hotScore.focusKeyword) return hotScore.focusKeyword;
+
+  // Else: extract most specific AI noun phrase from title
+  const titleStr = (title || '');
+  const aiPhrases = [
+    /(AI|artificial intelligence)\s+(writing|image|video|code|coding|chat|assistant|tool|agent|model|generator|editor)/i,
+    /(best|top|leading)\s+(AI|AI-powered)\s+(\w+\s+)*(tool|app|software|platform|assistant)/i,
+    /how to\s+(use|build|create|make|train|deploy|master)\s+(\w+\s+)*?(AI|GPT|LLM|model|agent|bot|automation)/i,
+    /(\w+)\s+(vs|versus|alternative|review|comparison)/i,
+  ];
+
+  for (const pattern of aiPhrases) {
+    const m = titleStr.match(pattern);
+    if (m) return m[0].length > 50 ? m[0].substring(0, 50).trim() : m[0].trim();
+  }
+
+  // Fallback: use the first 1-3 meaningful words from title that are AI-related
+  const aiWords = titleStr.match(/\b(AI|GPT|ChatGPT|Claude|Gemini|LLaMA|Mistral|Copilot|Agent|Neural|Deep|Learning|Model|Bot|Automation)\b/i);
+  if (aiWords) return aiWords[1];
+
+  return '';
+}
+
+function makeSeoSlug(title, focusKeyword) {
+  // Clean the title: lowercase, keep alphanumeric and spaces
+  let clean = title.toLowerCase();
+  clean = clean.replace(/[^a-z0-9\s-]/g, '');       // remove special chars except spaces and hyphens
+  clean = clean.replace(/\s+/g, ' ').trim();          // normalize whitespace
+
+  // Remove common stop words
+  const stopWords = /\b(a|an|the|and|or|but|in|on|at|to|for|of|with|by|from|up|about|into|over|after|how|what|why|is|it|its|your|our|their|has|have|been|was|were|all|each|can|will|just|also|very|not|are|be|this|that|new|get|use|using|used)\b/gi;
+  clean = clean.replace(stopWords, '');
+  clean = clean.replace(/\s+/g, ' ').trim();
+
+  // Convert to slug
+  let slug = clean.replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  if (focusKeyword && slug) {
+    const kwSlug = focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    // If focus keyword isn't already in the slug, prepend it
+    if (!slug.includes(kwSlug)) {
+      slug = kwSlug + '-' + slug;
+    }
+  } else if (!slug) {
+    slug = focusKeyword
+      ? focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      : 'article-' + Date.now();
+  }
+
+  // Truncate to 60 chars (Google truncates longer), removing trailing hyphens
+  slug = slug.substring(0, 60).replace(/-+$/g, '');
+  return slug || 'article-' + Date.now();
+}
+
+function makeSeoDescription(description, content, focusKeyword) {
+  let desc = (description || '').trim();
+
+  // If no description, use first 120 chars of content (plain text)
+  if (!desc && content) {
+    const plain = content.replace(/<[^>]+>/g, '').trim();
+    desc = plain.substring(0, 160).replace(/\s+\S*$/, ''); // word-boundary truncate
+  }
+
+  // Ensure focus keyword appears in the description
+  if (focusKeyword && desc) {
+    const kwLower = focusKeyword.toLowerCase();
+    const descLower = desc.toLowerCase();
+    const kwIdx = descLower.indexOf(kwLower);
+
+    if (kwIdx === -1 || kwIdx > 60) {
+      // Prepend keyword if missing or too far in
+      desc = focusKeyword + ': ' + desc;
+    }
+  }
+
+  // Truncate to ~155 chars at word boundary
+  if (desc.length > 155) {
+    desc = desc.substring(0, 152).replace(/\s+\S*$/, '') + '...';
+  }
+
+  return desc.substring(0, 300);
+}
+
+// Old makeSlug is replaced by makeSeoSlug above — kept as alias for GitHub README fallback
 function makeSlug(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .substring(0, 100) || 'article-' + Date.now();
+  return makeSeoSlug(title, null);
 }
 
 // ============================================================
@@ -180,10 +338,18 @@ function calcReadTime(html) {
 // AI RELEVANCE CHECK (pre-scrape filter)
 // ============================================================
 
-function isAiRelevant(title, description) {
+function isAiRelevant(title, description, topics) {
   const titleLower = (title || '').toLowerCase();
   const descLower = (description || '').toLowerCase();
-  // Must have AI keywords in the title itself
+  const allText = titleLower + ' ' + descLower;
+
+  // Check topics if provided (GitHub repos)
+  if (topics && Array.isArray(topics)) {
+    const topicMatches = topics.some(t => /ai|llm|gpt|chatgpt|claude|gemini|deepseek|mistral|tutorial|machine.learning|deep.learning|neural|agent|nlp|llama|openai|anthropic/i.test(t));
+    if (topicMatches) return true;
+  }
+
+  // Must have AI keywords in the title or description
   const titleAiKeywords = /ai|artificial.intelligence|machine.learning|deep.learning|llm|gpt|chatgpt|chat.?gpt|neural|prompt|agent|bot|nlp|computer.vision|tensorflow|pytorch|algorithm|stable.diffusion|midjourney|dalle|openai|anthropic|claude|gemini|llama|mistral|copilot|langchain|hugging.?face|gradio|generative|model|training|fine.?tune|RAG|embedding|vector|transformer|diffusion/i;
   if (titleAiKeywords.test(titleLower)) return true;
   // Title-only fallback for very common terms
@@ -233,6 +399,9 @@ function isSpam(title, content) {
     /china.dictatorship|freetaiwan|tibet.independence/i,
     /çl\|cker|çl1cker/i,
     /autonomous.payments/i,
+    // Promotional API / service plugs
+    /nsst\s+ai/i,
+    /api\.nsstab\.com/i,
   ];
   // Also skip if no AI-related keywords in title or first 500 chars
   const aiKeywords = /ai|artificial.intelligence|machine.learning|deep.learning|llm|gpt|chatgpt|neural|model|automation|data.?science|prompt|agent|bot|nlp|computer.vision|tensorflow|pytorch|algorithm|train|stable.diffusion|midjourney|dalle/i;
@@ -240,6 +409,37 @@ function isSpam(title, content) {
     return true; // Not clearly AI-related
   }
   return spamPatterns.some(p => p.test(text));
+}
+
+/**
+ * Detect AI-template-generated content (e.g. [HOOK], [MAIN - TAKEAWAY], [OUTRO] markers)
+ */
+function isAiTemplateContent(title, content) {
+  const fullText = title + ' ' + content;
+
+  // Common AI generation template markers
+  const templateMarkers = [
+    /\[HOOK\]/i, /\[MAIN\s*[-–]\s*TAKEAWAY\]/i, /\[OUTRO\]/i,
+    /\[INTRODUCTION\]/i, /\[CONCLUSION\]/i, /\[KEY TAKEAWAYS?\]/i,
+    /\[BODY\]/i, /\[SUMMARY\]/i,
+    /Meta\s+Information:/i,
+    /"body_markdown":/,
+    /"canonical_url":/,
+  ];
+
+  let markerCount = 0;
+  for (const pattern of templateMarkers) {
+    if (pattern.test(fullText)) markerCount++;
+  }
+
+  // 2+ template markers = AI-generated template content
+  if (markerCount >= 2) return true;
+
+  // Check for structured JSON/metadata blocks suggesting AI batch output
+  const hasJsonBlock = /\{[^}]*"nodes"\s*:|\{[^}]*"body_markdown"\s*:/i.test(fullText);
+  const hasTemplateSections = /\[HOOK\].*\[MAIN.*TAKEAWAY\].*\[OUTRO\]/is.test(fullText);
+
+  return hasJsonBlock || hasTemplateSections;
 }
 
 // ============================================================
@@ -364,6 +564,87 @@ async function uploadArticle(article) {
 }
 
 // ============================================================
+// VERIFY UPLOADED ARTICLE
+// ============================================================
+
+async function verifyArticle(slug, expectedTitle) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?slug=eq.${encodeURIComponent(slug)}&limit=1&select=id,title,slug,description,content,created_at`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_SERVICE_KEY,
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!res.ok) {
+      console.log(`  ⚠ VERIFY: Fetch failed (${res.status})`);
+      return false;
+    }
+
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      console.log(`  ⚠ VERIFY: Article not found in DB after upload!`);
+      return false;
+    }
+
+    const article = data[0];
+    const issues = [];
+
+    // Check title
+    if (!article.title || article.title.length < 5) {
+      issues.push('title missing or too short');
+    }
+
+    // Check description
+    if (!article.description || article.description.length < 10) {
+      issues.push('description missing or too short');
+    }
+
+    // Check content
+    if (!article.content || article.content.length < 200) {
+      issues.push('content missing or too short');
+    }
+
+    // Check for unclosed HTML tags (common rendering issue)
+    const openTags = (article.content || '').match(/<(?!\/|br|hr|img|input|meta|link|!--)([a-z][a-z0-9]*)\b[^>]*>/gi) || [];
+    const closeTags = (article.content || '').match(/<\/([a-z][a-z0-9]*)\s*>/gi) || [];
+    const tagCounts = {};
+    openTags.forEach(t => { const n = t.match(/([a-z][a-z0-9]*)/i)?.[1]; if (n) tagCounts[n] = (tagCounts[n] || 0) + 1; });
+    closeTags.forEach(t => { const n = t.match(/\/([a-z][a-z0-9]*)/i)?.[1]; if (n) tagCounts[n] = (tagCounts[n] || 0) - 1; });
+    const unbalanced = Object.entries(tagCounts).filter(([_, c]) => c !== 0).map(([t, c]) => `${t}(${c > 0 ? 'unclosed' : 'extra close'})`);
+    if (unbalanced.length > 0) {
+      issues.push('unbalanced HTML tags: ' + unbalanced.join(', '));
+    }
+
+    // Check for garbled content: if plain text has >5% non-ASCII, flag it
+    const plainText = (article.content || '').replace(/<[^>]+>/g, '').trim();
+    if (plainText.length > 100) {
+      const nonAscii = (plainText.match(/[^\x00-\x7F]/g) || []).length;
+      if (nonAscii / plainText.length > 0.05) {
+        issues.push(`high non-ASCII ratio (${(nonAscii / plainText.length * 100).toFixed(1)}%) — possible garbled content`);
+      }
+    }
+
+    // Log preview (first 120 chars of plain text)
+    const preview = plainText.substring(0, 120).replace(/\s+\S*$/, '');
+    console.log(`  ✅ VERIFY: "${article.title?.substring(0, 50)}" — ${article.description?.substring(0, 60)}...`);
+    console.log(`    Content preview: ${preview}...`);
+    console.log(`    Content length: ${article.content.length} chars | ${plainText.split(/\s+/).length} words`);
+
+    if (issues.length > 0) {
+      console.log(`  ⚠ Issues: ${issues.join('; ')}`);
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    console.log(`  ⚠ VERIFY: Error — ${e.message}`);
+    return false;
+  }
+}
+
+// ============================================================
 // IMAGE PROCESSING (download external images, upload to Supabase)
 // ============================================================
 
@@ -468,15 +749,20 @@ async function processImages(html, baseUrl) {
     if (src !== originalSrc) {
       $(el).attr('src', src);
     }
+  }
 
+  // Process all images concurrently
+  const results = await Promise.all(imgs.map(async (el) => {
+    const src = $(el).attr('src');
+    if (!src) return null;
     const newSrc = await downloadAndUploadImage(src);
-    if (newSrc !== src) {
-      $(el).attr('src', newSrc);
+    return { el, newSrc, src };
+  }));
+  for (const r of results) {
+    if (r && r.newSrc !== r.src) {
+      $(r.el).attr('src', r.newSrc);
       replaced++;
     }
-
-    // Delay between uploads
-    if (replaced > 0 && replaced % 3 === 0) await new Promise(r => setTimeout(r, 500));
   }
 
   if (replaced > 0) console.log(`    [IMG] ${replaced}/${imgs.length} images processed`);
@@ -488,7 +774,7 @@ async function processImages(html, baseUrl) {
 // ============================================================
 
 const rssParser = new RssParser({
-  timeout: 15000,
+  timeout: 8000,
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml',
@@ -519,15 +805,12 @@ async function scrapeContent(url) {
 
   try {
     const page = await browser.newPage();
-    await page.setDefaultTimeout(15000);
+    await page.setDefaultTimeout(20000);
 
     // Block images and fonts for faster loading
-    await page.route('**/*.{png,jpg,jpeg,gif,svg,woff,woff2,ttf,eot}', route => route.abort());
+    await page.route('**/*.{png,jpg,jpeg,gif,svg,woff,woff2,ttf,eot,css}', route => route.abort());
 
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
-
-    // Wait for content to render
-    await page.waitForTimeout(2000);
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
 
     // Get page content
     const html = await page.content();
@@ -539,11 +822,25 @@ async function scrapeContent(url) {
     result.content = cleanContent($);
     result.description = extractDescription($);
 
-    // Clean title: remove site name suffixes like " - DEV Community"
+    // Clean title: remove site name suffixes like " - DEV Community", " — Medium", " | Hacker News"
     let rawTitle = $('h1').first().text().trim() || $('title').text().trim();
-    rawTitle = rawTitle.replace(/\s*[–—-]\s*.+$/, '').trim();
+    // Match various title separators:  —  –  -  |  •  ::
+    rawTitle = rawTitle.replace(/\s*[–—-](?:\s*.+)?$/i, '').trim();
+    rawTitle = rawTitle.replace(/\s*\|\s*.+$/i, '').trim();
+    rawTitle = rawTitle.replace(/\s*•\s*.+$/i, '').trim();
+    rawTitle = rawTitle.replace(/\s*::\s*.+$/i, '').trim();
     rawTitle = rawTitle.replace(/Enter fullscreen mode.*/i, '').trim();
     rawTitle = rawTitle.replace(/\s{2,}/g, ' ').trim();
+    // Keep numbers (dates, versions are SEO-relevant), keep title length reasonable
+    if (rawTitle.length > 80) {
+      // Try to keep first sentence or first 80 chars
+      const sentenceMatch = rawTitle.match(/^[^.!?]*[.!?]/);
+      if (sentenceMatch && sentenceMatch[0].length < 80) {
+        rawTitle = sentenceMatch[0].trim();
+      } else {
+        rawTitle = rawTitle.substring(0, 77).trim() + '...';
+      }
+    }
     result.title = rawTitle;
 
     await page.close();
@@ -731,6 +1028,29 @@ async function fetchGithubReadme(owner, repo) {
 }
 
 // ============================================================
+// CONCURRENT SCRAPING
+// ============================================================
+
+async function scrapeBatch(candidates, concurrency) {
+  const results = new Array(candidates.length);
+  let idx = 0;
+
+  const worker = async () => {
+    while (idx < candidates.length) {
+      const i = idx++;
+      const c = candidates[i];
+      console.log(`  [${i+1}/${candidates.length}] ${c.title.substring(0, 60)}`);
+      const scraped = await scrapeContent(c.url);
+      results[i] = { ...c, scraped };
+    }
+  };
+
+  const workers = Array(Math.min(concurrency, candidates.length)).fill(null).map(() => worker());
+  await Promise.all(workers);
+  return results;
+}
+
+// ============================================================
 // MAIN
 // ============================================================
 
@@ -740,6 +1060,8 @@ async function main() {
   console.log(`  Dry run: ${DRY_RUN}`);
   console.log(`  Max articles: ${MAX_ARTICLES}`);
   console.log(`  Source filter: ${SOURCE_FILTER || 'all'}`);
+  console.log(`  Hot terms only: ${HOT_TERMS_ONLY}`);
+  console.log(`  Concurrency: ${CONCURRENCY}`);
   console.log('========================================\n');
 
   // Load dedup cache
@@ -753,139 +1075,236 @@ async function main() {
     console.log(`Filtered to ${feeds.length} feed(s) matching "${SOURCE_FILTER}"\n`);
   }
 
+  // ============================================================
+  // PHASE 1: Collect candidates from RSS feeds
+  // ============================================================
+
   let processed = 0;
   let uploaded = 0;
   let skipped = 0;
   let errors = 0;
 
-  for (const feedConfig of feeds) {
-    if (processed >= MAX_ARTICLES) break;
+  const candidates = [];
 
+  // Fetch all RSS feeds concurrently
+  const feedResults = await Promise.all(feeds.map(async (feedConfig) => {
     const items = await fetchFeed(feedConfig);
+    return { items, feedConfig };
+  }));
+
+  for (const { items, feedConfig } of feedResults) {
+    if (candidates.length >= MAX_ARTICLES * 2) break;
 
     for (const item of items) {
-      if (processed >= MAX_ARTICLES) break;
+      if (candidates.length >= MAX_ARTICLES * 2) break;
 
       const url = item.link || item.guid;
       if (!url) continue;
 
-      processed++;
-
-      // Dedup check 1: already in crawled list
+      // Dedup check
       if (isAlreadyCrawled(url, crawled)) {
-        console.log(`  [DUP] ${item.title?.substring(0, 60)}...`);
-        skipped++;
         continue;
       }
-
-      console.log(`\n[${processed}/${MAX_ARTICLES}] ${item.title?.substring(0, 70)}`);
-      console.log(`  URL: ${url}`);
 
       // AI relevance check (pre-scrape filter)
       if (!isAiRelevant(item.title || '', item.contentSnippet || '')) {
-        console.log(`  [SKIP] Not AI-related (title: "${item.title?.substring(0, 60)}")`);
-        skipped++;
         continue;
       }
 
-      // Scrape content
-      console.log(`  Scraping...`);
-      const scraped = await scrapeContent(url);
-
-      if (!scraped.content || scraped.content.length < 200) {
-        console.log(`  [SKIP] Content too short or empty`);
-        skipped++;
+      // Pre-scrape hot term check (title only, for early filtering)
+      const preHotScore = scoreHotTerms(item.title || '', item.contentSnippet || '');
+      if (HOT_TERMS_ONLY && preHotScore.score === 0) {
         continue;
       }
 
-      // Language filter: skip non-English content
-      const contentPlainText = scraped.content.replace(/<[^>]+>/g, '');
-      if (!isEnglish(contentPlainText)) {
-        console.log(`  [SKIP] Non-English content`);
-        skipped++;
-        continue;
-      }
-
-      // Quality check
-      const qualityTitle = item.title || scraped.title || '';
-      if (!isQualityContent(qualityTitle, scraped.content)) {
-        console.log(`  [SKIP] Low quality content (discussion page or too short)`);
-        skipped++;
-        continue;
-      }
-
-      // Spam filter
-      const checkTitle = item.title || scraped.title || '';
-      if (isSpam(checkTitle, scraped.content)) {
-        console.log(`  [SKIP] Spam detected`);
-        skipped++;
-        continue;
-      }
-
-      // Build article data
-      const title = item.title || scraped.title || 'Untitled';
-      const slug = makeSlug(title);
-      const description = scraped.description || item.contentSnippet?.substring(0, 200) || '';
-      console.log(`  Processing images...`);
-      const contentHtml = await processImages(scraped.content, url);
-      const categoryId = detectCategory(title, contentHtml);
-      const readTime = calcReadTime(contentHtml);
-      const pubDate = extractDate(item);
-
-      // Add source attribution
-      const sourceLine = `<hr><p style="color:#6b7280;font-size:13px;"><em>Source: <a href="${url}" rel="nofollow">${url}</a></em></p>`;
-      const fullContent = contentHtml + '\n' + sourceLine;
-
-      // Dedup check 2: slug exists in DB
-      console.log(`  Category: ${CATEGORIES.find(c => c.id === categoryId)?.name}`);
-      console.log(`  Slug: ${slug}`);
-      console.log(`  Read time: ${readTime} min`);
-
-      const slugExistsInDb = await slugExists(slug);
-      if (slugExistsInDb) {
-        console.log(`  [SKIP] Slug already exists in database`);
-        crawled.push({ url, title, date: new Date().toISOString() });
-        skipped++;
-        continue;
-      }
-
-      if (DRY_RUN) {
-        console.log(`  [DRY RUN] Would upload: "${title}"`);
-        crawled.push({ url, title, date: new Date().toISOString() });
-        uploaded++;
-        continue;
-      }
-
-      // Upload
-      try {
-        const articleData = {
-          title,
-          slug,
-          description: description.substring(0, 300),
-          content: fullContent,
-          category_id: categoryId,
-          tags: ['ai', 'tutorial', feedConfig.name.replace(/[0-9]/g, '')],
-          read_time: readTime,
-          rating: 0,
-          featured: false,
-          published: true,
-          created_at: pubDate,
-          updated_at: new Date().toISOString(),
-        };
-
-        const result = await uploadArticle(articleData);
-        const resultId = Array.isArray(result) ? result[0]?.id : result?.id;
-        console.log(`  [OK] Uploaded as ID ${resultId || '?'}`);
-        crawled.push({ url, title, date: new Date().toISOString() });
-        uploaded++;
-      } catch (e) {
-        console.log(`  [ERR] ${e.message}`);
-        errors++;
-      }
-
-      // Rate limiting delay
-      await new Promise(r => setTimeout(r, 1000));
+      candidates.push({
+        url,
+        title: (item.title || '').trim(),
+        feedConfig,
+        item,
+      });
     }
+  }
+
+  console.log(`\nCandidates collected: ${candidates.length}\n`);
+
+  // ============================================================
+  // PHASE 2: Concurrent scraping
+  // ============================================================
+
+  console.log(`--- Scraping ${candidates.length} articles (concurrency: ${CONCURRENCY}) ---\n`);
+
+  const scrapedResults = await scrapeBatch(candidates, CONCURRENCY);
+
+  // ============================================================
+  // PHASE 3: Post-scrape processing
+  // ============================================================
+
+  console.log(`\n--- Post-processing scraped articles ---\n`);
+
+  const articleQueue = [];
+
+  for (const result of scrapedResults) {
+    const { url, title, item, feedConfig, scraped } = result;
+
+    if (!scraped || !scraped.content || scraped.content.length < 200) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — content too short`);
+      skipped++;
+      continue;
+    }
+
+    // Language filter
+    const contentPlainText = scraped.content.replace(/<[^>]+>/g, '');
+    if (!isEnglish(contentPlainText)) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — non-English`);
+      skipped++;
+      continue;
+    }
+
+    // Quality check
+    if (!isQualityContent(title, scraped.content)) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — low quality`);
+      skipped++;
+      continue;
+    }
+
+    // Spam filter
+    if (isSpam(title, scraped.content)) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — spam`);
+      skipped++;
+      continue;
+    }
+
+    // AI template content filter (e.g. [HOOK], [OUTRO], Meta Information blocks)
+    if (isAiTemplateContent(title, scraped.content)) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — AI template content`);
+      skipped++;
+      continue;
+    }
+
+    // Score hot terms
+    const hotScore = scoreHotTerms(title, scraped.content);
+    if (HOT_TERMS_ONLY && hotScore.score === 0) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — no hot terms`);
+      skipped++;
+      continue;
+    }
+
+    // Process images
+    console.log(`  [IMG] ${title.substring(0, 50)}...`);
+    const contentHtml = await processImages(scraped.content, url);
+
+    articleQueue.push({
+      item,
+      scraped,
+      contentHtml,
+      feedConfig,
+      hotScore,
+      url,
+      title,
+      pubDate: extractDate(item),
+    });
+
+    processed++;
+  }
+
+  console.log(`\nProcessed: ${processed}, Skipped: ${skipped}, Queue: ${articleQueue.length}\n`);
+
+  // ============================================================
+  // PHASE 4: Priority sort & upload
+  // ============================================================
+
+  // Sort by hot term score descending (highest priority first)
+  articleQueue.sort((a, b) => b.hotScore.score - a.hotScore.score);
+
+  console.log(`--- Upload Queue (sorted by hot term priority) ---\n`);
+
+  for (const queued of articleQueue) {
+    if (uploaded >= MAX_ARTICLES) break;
+
+    const { item, scraped, contentHtml, feedConfig, hotScore, url, title, pubDate } = queued;
+
+    // Extract focus keyword for SEO
+    const focusKeyword = extractFocusKeyword(title, contentHtml, hotScore);
+
+    // SEO-optimized slug
+    const slug = makeSeoSlug(title, focusKeyword);
+
+    // SEO-optimized description
+    const rawDescription = scraped.description || item.contentSnippet?.substring(0, 200) || '';
+    const description = makeSeoDescription(rawDescription, contentHtml, focusKeyword);
+
+    // Category detection
+    const categoryId = detectCategory(title, contentHtml);
+    const readTime = calcReadTime(contentHtml);
+
+    // Source attribution
+    const sourceLine = `<hr><p style="color:#6b7280;font-size:13px;"><em>Source: <a href="${url}" rel="nofollow">${url}</a></em></p>`;
+    const fullContent = contentHtml + '\n' + sourceLine;
+
+    // Log SEO info
+    const catName = CATEGORIES.find(c => c.id === categoryId)?.name || 'Unknown';
+    console.log(`\n[SEO] ${title.substring(0, 70)}`);
+    console.log(`  Category: ${catName}`);
+    console.log(`  Slug: ${slug} (${slug.length} chars)`);
+    console.log(`  Focus keyword: ${focusKeyword || '(none)'}`);
+    console.log(`  Hot term score: ${hotScore.score}`);
+    console.log(`  Description: ${description.substring(0, 100)}...`);
+
+    // Dedup check: slug exists in DB
+    const slugExistsInDb = await slugExists(slug);
+    if (slugExistsInDb) {
+      console.log(`  [SKIP] Slug already exists in database`);
+      crawled.push({ url, title, date: new Date().toISOString() });
+      continue;
+    }
+
+    if (DRY_RUN) {
+      console.log(`  [DRY RUN] Would upload`);
+      crawled.push({ url, title, date: new Date().toISOString() });
+      uploaded++;
+      continue;
+    }
+
+    // Build tags with SEO keywords
+    const tags = ['ai', 'tutorial'];
+    if (focusKeyword) tags.push(focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    tags.push(feedConfig.name.replace(/[0-9]/g, ''));
+    if (hotScore.matchedTerm && hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-') !== focusKeyword?.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
+      tags.push(hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    }
+
+    // Upload
+    try {
+      const articleData = {
+        title,
+        slug,
+        description: description.substring(0, 300),
+        content: fullContent,
+        category_id: categoryId,
+        tags,
+        read_time: readTime,
+        rating: 0,
+        featured: false,
+        published: false,
+        created_at: pubDate,
+        updated_at: new Date().toISOString(),
+      };
+
+      const result = await uploadArticle(articleData);
+      const resultId = Array.isArray(result) ? result[0]?.id : result?.id;
+      console.log(`  [OK] Saved as draft ID ${resultId || '?'}`);
+      // Verify the article was stored correctly
+      await verifyArticle(slug, title);
+      crawled.push({ url, title, date: new Date().toISOString() });
+      uploaded++;
+    } catch (e) {
+      console.log(`  [ERR] ${e.message}`);
+      errors++;
+    }
+
+    // Rate limiting delay
+    await new Promise(r => setTimeout(r, 1000));
   }
 
   // ============================================================
@@ -913,7 +1332,7 @@ async function main() {
         console.log(`  URL: ${repoUrl}`);
         console.log(`  Stars: ${repoInfo.stars} | Topics: ${repoInfo.topics.join(', ') || 'none'}`);
 
-        if (!isAiRelevant(repoInfo.name + ' ' + repoInfo.description, repoInfo.description)) {
+        if (!isAiRelevant(repoInfo.name + ' ' + repoInfo.description, repoInfo.description, repoInfo.topics)) {
           console.log(`  [SKIP] Not AI-related`);
           skipped++;
           continue;
@@ -937,16 +1356,33 @@ async function main() {
           continue;
         }
 
+        // Check for AI template content or spam in GitHub READMEs too
+        if (isAiTemplateContent(repoInfo.name, readmeHtml)) {
+          console.log(`  [SKIP] AI template README`);
+          skipped++;
+          continue;
+        }
+        if (isSpam(repoInfo.name, readmeHtml)) {
+          console.log(`  [SKIP] Spam README`);
+          skipped++;
+          continue;
+        }
+
         const title = `${repoInfo.name}: ${repoInfo.description}`;
-        const slug = `github-${makeSlug(repoInfo.name)}`;
+        const hotScore = scoreHotTerms(title, readmeHtml);
+        const focusKeyword = extractFocusKeyword(title, readmeHtml, hotScore);
+        const slug = `github-${makeSeoSlug(repoInfo.name, focusKeyword)}`;
         const categoryId = detectCategory(title + ' ' + repoInfo.topics.join(' '), readmeHtml);
         const readTime = calcReadTime(readmeHtml);
+        const seoDescription = makeSeoDescription(repoInfo.description, readmeHtml, focusKeyword);
 
         const sourceLine = `<hr><p style="color:#6b7280;font-size:13px;"><em>Source: <a href="${repoInfo.url}" rel="nofollow">GitHub: ${repoInfo.name}</a> (${repoInfo.stars} stars${repoInfo.topics.length > 0 ? ', ' + repoInfo.topics.join(', ') : ''})</em></p>`;
         const fullContent = readmeHtml + '\n' + sourceLine;
 
         console.log(`  Category: ${CATEGORIES.find(c => c.id === categoryId)?.name}`);
-        console.log(`  Slug: ${slug}`);
+        console.log(`  Slug: ${slug} (${slug.length} chars)`);
+        console.log(`  Focus keyword: ${focusKeyword || '(none)'}`);
+        console.log(`  Hot term score: ${hotScore.score}`);
 
         if (await slugExists(slug)) {
           console.log(`  [SKIP] Slug already exists in database`);
@@ -962,25 +1398,35 @@ async function main() {
           continue;
         }
 
+        // Build tags with SEO keywords
+        const tags = ['ai', 'tutorial', 'github'];
+        if (focusKeyword) tags.push(focusKeyword.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        if (hotScore.matchedTerm && hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-') !== focusKeyword?.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
+          tags.push(hotScore.matchedTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        }
+        repoInfo.topics.slice(0, 3).forEach(t => { if (!tags.includes(t)) tags.push(t); });
+
         try {
           const articleData = {
             title,
             slug,
-            description: repoInfo.description.substring(0, 300),
+            description: seoDescription.substring(0, 300),
             content: fullContent,
             category_id: categoryId,
-            tags: ['ai', 'tutorial', 'github', ...repoInfo.topics.slice(0, 3)],
+            tags,
             read_time: readTime,
             rating: 0,
             featured: false,
-            published: true,
+            published: false,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
 
           const result = await uploadArticle(articleData);
           const resultId = Array.isArray(result) ? result[0]?.id : result?.id;
-          console.log(`  [OK] Uploaded as ID ${resultId || '?'}`);
+          console.log(`  [OK] Saved as draft ID ${resultId || '?'}`);
+          // Verify the article was stored correctly
+          await verifyArticle(slug, title);
           crawled.push({ url: repoUrl, title, date: new Date().toISOString() });
           uploaded++;
         } catch (e) {

@@ -122,7 +122,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // ===== HOMEPAGE LOGIC =====
-  const featuredGrid = document.getElementById('featuredGrid');
   const categorySections = document.getElementById('categorySections');
   const allArticlesGrid = document.getElementById('allArticlesGrid');
   const articleCount = document.getElementById('articleCount');
@@ -173,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     ) : allArticles;
     renderAllArticles(filtered);
     // Scroll to results when search is active
-    if (term && document.getElementById('featuredGrid')) {
+    if (term && document.getElementById('allArticlesGrid')) {
       const el = document.getElementById('allArticlesGrid');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -186,14 +185,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   });
   document.addEventListener('keyup', function(e) {
-    if (e.target && e.target.id === 'searchInput' && !!document.getElementById('featuredGrid')) {
+    if (e.target && e.target.id === 'searchInput' && !!document.getElementById('allArticlesGrid')) {
       applySearchFilter();
     }
   });
   // Intercept form submit on homepage only
   document.addEventListener('submit', function(e) {
     if (e.target && e.target.id === 'searchForm') {
-      if (document.getElementById('featuredGrid')) {
+      if (document.getElementById('allArticlesGrid')) {
         e.preventDefault();
         applySearchFilter();
       }
@@ -201,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   });
 
-  if (featuredGrid) {
+  if (allArticlesGrid) {
     // Homepage — load data
     let categories = [];
     let currentFilterCategory = null;
@@ -212,8 +211,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       currentFilterCategory = urlParams.get('category') || null;
 
       categories = await fetchCategories();
-
-      // Categories are pre-rendered in HTML — nav and footer already have them
 
       // Fetch articles
       allArticles = await fetchPublishedArticles(currentFilterCategory);
@@ -227,18 +224,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             link.classList.add('active');
           }
         });
-      }
-
-      // Featured articles
-      if (!currentFilterCategory) {
-        const featured = allArticles.filter(a => a.featured).slice(0, 6);
-        if (featured.length > 0) {
-          featuredGrid.innerHTML = featured.map(a => createArticleCard(a, true)).join('');
-        } else {
-          document.getElementById('featured').style.display = 'none';
-        }
-      } else {
-        document.getElementById('featured').style.display = 'none';
       }
 
       // Category sections (only when no filter)
@@ -309,10 +294,10 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Update page title and meta
           document.title = article.title + ' - AI Tools Insider';
           document.querySelector('meta[name="description"]').content = article.description || '';
-          document.querySelector('link[rel="canonical"]').href = 'https://aitoolsinsider.com/article?slug=' + slug;
+          document.querySelector('link[rel="canonical"]').href = 'https://toolrankly.com/article?slug=' + slug;
           document.querySelector('meta[property="og:title"]').content = article.title;
           document.querySelector('meta[property="og:description"]').content = article.description || '';
-          document.querySelector('meta[property="og:url"]').content = 'https://aitoolsinsider.com/article?slug=' + slug;
+          document.querySelector('meta[property="og:url"]').content = 'https://toolrankly.com/article?slug=' + slug;
           document.querySelector('meta[name="twitter:title"]').content = article.title;
           document.querySelector('meta[name="twitter:description"]').content = article.description || '';
 

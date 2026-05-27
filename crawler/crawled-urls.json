@@ -148,5 +148,300 @@
     "url": "https://github.com/run-llama/llama_index",
     "title": "LlamaIndex - RAG Framework: Official tutorials and examples",
     "date": "2026-05-26T21:22:13.400Z"
+  },
+  {
+    "url": "https://dev.to/soytuber/claude-code-access-optimization-strategies-new-llm-response-vault-for-developers-4lhf",
+    "title": "Claude Code Access & Optimization Strategies; New LLM Response Vault for Developers",
+    "date": "2026-05-26T22:16:18.386Z"
+  },
+  {
+    "url": "https://dev.to/kenimo49/i-benchmarked-5-voice-ai-stacks-only-2-stayed-under-300ms-2bka",
+    "title": "I Benchmarked 5 Voice AI Stacks. Only 2 Stayed Under 300ms.",
+    "date": "2026-05-26T22:16:18.601Z"
+  },
+  {
+    "url": "https://dev.to/kailashdev/building-a-real-time-voice-ai-assistant-using-open-source-tools-1gcj",
+    "title": "🎤 Building a Real-Time Voice AI Assistant Using Open Source Tools",
+    "date": "2026-05-26T22:16:18.992Z"
+  },
+  {
+    "url": "https://dev.to/zep1997/i-tested-three-ai-memory-retrieval-strategies-the-hard-failure-was-semantic-28nb",
+    "title": "I Tested Three AI Memory Retrieval Strategies. The Hard Failure Was Semantic",
+    "date": "2026-05-26T22:16:19.211Z"
+  },
+  {
+    "url": "https://dev.to/spindoctor/unlock-ai-mastery-your-5-step-roadmap-from-zero-to-shipping-production-ready-ai-2ln3",
+    "title": "Unlock AI Mastery: Your 5-Step Roadmap from Zero to Shipping Production-Ready AI",
+    "date": "2026-05-26T22:16:19.593Z"
+  },
+  {
+    "url": "https://dev.to/mervindublin/how-i-built-semantic-discussion-clustering-without-embeddings-and-why-it-was-good-enough-21dl",
+    "title": "How I Built Semantic Discussion Clustering Without Embeddings (and Why It Was Good Enough)",
+    "date": "2026-05-26T22:19:42.115Z"
+  },
+  {
+    "url": "https://dev.to/ebendttl/building-a-vector-search-engine-from-scratch-the-math-and-mechanics-of-hnsw-4om3",
+    "title": "Building a Vector Search Engine from Scratch: The Math and Mechanics of HNSW",
+    "date": "2026-05-26T22:19:42.335Z"
+  },
+  {
+    "url": "https://dev.to/digitalcolliers/ai-for-healthcare-use-cases-benefits-and-implementation-40g1",
+    "title": "AI for Healthcare: Use Cases, Benefits, and Implementation",
+    "date": "2026-05-26T22:19:42.550Z"
+  },
+  {
+    "url": "https://dev.to/zahraarmantech/what-happens-when-you-hide-embeddings-but-keep-search-working-3mi2",
+    "title": "What happens when you hide embeddings but keep search working?",
+    "date": "2026-05-26T22:19:42.774Z"
+  },
+  {
+    "url": "https://dev.to/rileycraig14/the-open-bot-marketplace-where-ai-agents-earn-money-per-call-39043-2fam",
+    "title": "The open bot marketplace where AI agents earn money per call [39043]",
+    "date": "2026-05-26T22:36:08.231Z"
+  },
+  {
+    "url": "https://dev.to/rikinptl/human-aligned-decision-transformers-for-bio-inspired-soft-robotics-maintenance-under-real-time-33oe",
+    "title": "Human-Aligned Decision Transformers for bio-inspired soft robotics maintenance under real-time policy constraints",
+    "date": "2026-05-26T22:36:10.911Z"
+  },
+  {
+    "url": "https://dev.to/electra-ai/eight-hours-one-tiny-army-of-questions-my-ai-bouncer-day-3134",
+    "title": "Eight Hours, One Tiny Army of Questions: My AI Bouncer Day",
+    "date": "2026-05-26T22:36:13.091Z"
+  },
+  {
+    "url": "https://dev.to/on-chain-commerce/when-hindsight-was-2020-how-one-wrong-parameter-derailed-our-treasure-hunt-engine-for-six-hours-nei",
+    "title": "When Hindsight Was 20/20: How One Wrong Parameter Derailed Our Treasure Hunt Engine for Six Hours",
+    "date": "2026-05-26T22:36:15.261Z"
+  },
+  {
+    "url": "https://dev.to/numan_ahmad_9d395377f57e4/adapt-design-retail-ai-training-densight-labs-adapt-framework-2ieg",
+    "title": "Adapt Design Retail Ai Training — Densight Labs ADAPT Framework",
+    "date": "2026-05-26T22:36:17.470Z"
+  },
+  {
+    "url": "https://github.com/recommenders-team/recommenders",
+    "title": "recommenders-team/recommenders: Best Practices on Recommendation Systems",
+    "date": "2026-05-26T22:36:47.000Z"
+  },
+  {
+    "url": "https://github.com/datawhalechina/easy-vibe",
+    "title": "datawhalechina/easy-vibe: 💻 vibe coding 2026 | Your first modern Coding course for beginners to master step by step.",
+    "date": "2026-05-26T22:38:04.312Z"
+  },
+  {
+    "url": "https://dev.to/bristo_biju_105adeeefb4df/how-i-generate-unit-tests-in-30-seconds-with-one-chatgpt-prompt-3c0f",
+    "title": "How I Generate Unit Tests in 30 Seconds With One ChatGPT Prompt",
+    "date": "2026-05-26T22:56:35.851Z"
+  },
+  {
+    "url": "https://dev.to/vystartasv/we-asked-10-llms-to-write-efficient-code-only-4-got-better-47gf",
+    "title": "We Asked 10 LLMs to Write Efficient Code. Only 4 Got Better.",
+    "date": "2026-05-26T22:56:37.980Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/manus-ai-vs-devin-which-ai-coding-agent-should-you-choose-in-2026-4amd",
+    "title": "Manus AI vs Devin: Which AI Coding Agent Should You Choose in 2026?",
+    "date": "2026-05-26T22:56:39.990Z"
+  },
+  {
+    "url": "https://dev.to/fishi/building-a-healthcare-ai-assistant-with-rag-net-postgresql-and-pgvector-4aip",
+    "title": "Building a Healthcare AI Assistant with RAG, .NET, PostgreSQL, and pgvector",
+    "date": "2026-05-26T22:56:42.341Z"
+  },
+  {
+    "url": "https://dev.to/storm_son_b44db572b250b68/the-best-ai-customer-service-tools-in-2026-intercom-vs-zendesk-vs-getresponse-801",
+    "title": "The Best AI Customer Service Tools in 2026: Intercom vs Zendesk vs GetResponse",
+    "date": "2026-05-26T22:56:44.410Z"
+  },
+  {
+    "url": "https://dev.to/suckup_de/use-blunt-prompts-and-get-shit-done-4mdd",
+    "title": "Use Blunt Prompts and Get Shit Done",
+    "date": "2026-05-26T22:56:46.430Z"
+  },
+  {
+    "url": "https://dev.to/vystartasv/10-models-tested-from-816-to-10-the-free-tier-is-a-full-on-gamble-4kfc",
+    "title": "10 Models Tested: From 81.6% to 10%. The Free Tier is a Full-On Gamble.",
+    "date": "2026-05-26T22:56:48.440Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/i-analyzed-500-manus-ai-tasks-to-find-the-optimal-credit-strategy-data-inside-4255",
+    "title": "I Analyzed 500+ Manus AI Tasks to Find the Optimal Credit Strategy (Data Inside)",
+    "date": "2026-05-26T22:56:50.830Z"
+  },
+  {
+    "url": "https://github.com/microsoft/computervision-recipes",
+    "title": "microsoft/computervision-recipes: Best Practices, code samples, and documentation for Computer Vision.",
+    "date": "2026-05-26T22:57:27.730Z"
+  },
+  {
+    "url": "https://dev.to/bean_bean/is-claude-api-worth-31m-tokens-over-self-hosted-llama-42nn",
+    "title": "Is Claude API Worth $3/1M Tokens Over Self-Hosted Llama?",
+    "date": "2026-05-26T23:18:41.737Z"
+  },
+  {
+    "url": "https://dev.to/obscuriea/ai-driven-product-research-and-validation-at-zero-cost-1pgh",
+    "title": "Ai Driven Product Research And Validation At Zero Cost",
+    "date": "2026-05-26T23:18:43.950Z"
+  },
+  {
+    "url": "https://dev.to/pixelbank_dev_a810d06e3e1/panorama-stitching-deep-dive-problem-embedding-lookup-pjj",
+    "title": "Panorama Stitching — Deep Dive + Problem: Embedding Lookup",
+    "date": "2026-05-26T23:18:46.440Z"
+  },
+  {
+    "url": "https://dev.to/obscuriea/ai-driven-supply-chain-simplification-for-small-sellers-poh",
+    "title": "Ai Driven Supply Chain Simplification For Small Sellers",
+    "date": "2026-05-26T23:18:48.640Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/why-your-ai-agent-bills-are-so-high-and-how-to-fix-them-5d26",
+    "title": "Why Your AI Agent Bills Are So High (And How to Fix Them)",
+    "date": "2026-05-26T23:29:29.613Z"
+  },
+  {
+    "url": "https://dev.to/autonainews/what-really-happens-when-ai-agents-run-a-sitcom-247-5hbp",
+    "title": "What Really Happens When AI Agents Run a Sitcom 24/7",
+    "date": "2026-05-26T23:29:31.783Z"
+  },
+  {
+    "url": "https://dev.to/chenen900/how-ai-agents-can-help-you-navigate-chinas-advertising-law-1knp",
+    "title": "How AI Agents Can Help You Navigate China's Advertising Law",
+    "date": "2026-05-26T23:29:33.933Z"
+  },
+  {
+    "url": "https://dev.to/caishenai/i-tested-5-free-ai-writing-tools-in-2026-heres-which-one-actually-works-47gg",
+    "title": "I Tested 5 Free AI Writing Tools in 2026 — Here's Which One Actually Works",
+    "date": "2026-05-26T23:29:36.073Z"
+  },
+  {
+    "url": "https://dev.to/member_18b41f7c/nobody-reads-ai-safety-papers-but-649-people-upvoted-a-letter-to-an-llm-15id",
+    "title": "Nobody Reads AI Safety Papers. But 649 People Upvoted a Letter to an LLM.",
+    "date": "2026-05-26T23:29:38.232Z"
+  },
+  {
+    "url": "https://dev.to/iniyarajan86/best-ai-tools-for-youtube-creators-in-2026-1cf",
+    "title": "Best AI Tools for YouTube Creators in 2026",
+    "date": "2026-05-26T23:29:40.553Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/how-to-install-and-use-manus-ai-skills-complete-2026-guide-14ap",
+    "title": "How to Install and Use Manus AI Skills (Complete 2026 Guide)",
+    "date": "2026-05-26T23:29:42.704Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/manus-ai-pricing-in-2026-complete-guide-to-plans-credits-and-how-to-save-47-2ikm",
+    "title": "Manus AI Pricing in 2026: Complete Guide to Plans, Credits, and How to Save 47%",
+    "date": "2026-05-26T23:29:44.844Z"
+  },
+  {
+    "url": "https://dev.to/binky_6ad02e76335bf0ce709/i-tested-5-ai-writing-tools-for-30-days-heres-what-actually-works-392k",
+    "title": "I Tested 5 AI Writing Tools for 30 Days — Here's What Actually Works",
+    "date": "2026-05-26T23:29:46.994Z"
+  },
+  {
+    "url": "https://dev.to/cursuri-ai/ai-for-influencers-in-2026-how-to-build-a-content-engine-that-runs-itself-48h0",
+    "title": "AI for Influencers in 2026: How to Build a Content Engine That Runs Itself",
+    "date": "2026-05-26T23:29:49.154Z"
+  },
+  {
+    "url": "https://dev.to/binky_6ad02e76335bf0ce709/ai-video-scripts-that-actually-convert-the-workflow-top-creators-use-5514",
+    "title": "AI Video Scripts That Actually Convert: The Workflow Top Creators Use",
+    "date": "2026-05-26T23:29:51.323Z"
+  },
+  {
+    "url": "https://dev.to/ken_deng_ai/beyond-adsense-how-ai-automation-unlocks-3-new-revenue-streams-for-faceless-youtube-channels-1m46",
+    "title": "Beyond AdSense: How AI Automation Unlocks 3 New Revenue Streams for Faceless YouTube Channels",
+    "date": "2026-05-26T23:29:53.444Z"
+  },
+  {
+    "url": "https://dev.to/uni66_064216e14f6c022c6d9/storyboard-shot-types-reference-ws-ms-cu-ots-pov-explained-4neh",
+    "title": "Storyboard shot types reference: WS, MS, CU, OTS, POV explained",
+    "date": "2026-05-26T23:29:55.584Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/manus-ai-custom-instructions-the-complete-guide-to-getting-better-results-15oj",
+    "title": "Manus AI Custom Instructions: The Complete Guide to Getting Better Results",
+    "date": "2026-05-26T23:29:58.114Z"
+  },
+  {
+    "url": "https://dev.to/rafsilva85/5-free-ways-to-save-money-on-manus-ai-credits-no-tools-required-1903",
+    "title": "5 Free Ways to Save Money on Manus AI Credits (No Tools Required)",
+    "date": "2026-05-26T23:30:00.264Z"
+  },
+  {
+    "url": "https://dev.to/alphashark/how-ai-adjusts-emotional-tone-in-your-writing-4k31",
+    "title": "How AI adjusts emotional tone in your writing",
+    "date": "2026-05-26T23:30:02.445Z"
+  },
+  {
+    "url": "https://dev.to/alphashark/how-ai-adjusts-emotional-tone-in-your-writing-4k31",
+    "title": "How AI adjusts emotional tone in your writing",
+    "date": "2026-05-26T23:30:03.823Z"
+  },
+  {
+    "url": "https://dev.to/ken_deng_ai/ai-powered-highlight-reels-how-to-automate-raw-footage-summarization-with-descript-and-premiere-pro-1gm1",
+    "title": "AI-Powered Highlight Reels: How to Automate Raw Footage Summarization with Descript and Premiere Pro",
+    "date": "2026-05-26T23:30:04.994Z"
+  },
+  {
+    "url": "https://dev.to/caper_dev/build-a-profit-generating-ai-agent-with-langchain-a-step-by-step-tutorial-3i8i",
+    "title": "Build a Profit-Generating AI Agent with LangChain: A Step-by-Step Tutorial",
+    "date": "2026-05-26T23:39:52.149Z"
+  },
+  {
+    "url": "https://dev.to/caper_dev/build-a-profit-generating-ai-agent-with-langchain-a-step-by-step-tutorial-3i8i",
+    "title": "Build a Profit-Generating AI Agent with LangChain: A Step-by-Step Tutorial",
+    "date": "2026-05-26T23:39:53.529Z"
+  },
+  {
+    "url": "https://dev.to/hiroki-ii-ai/ai-daily-digest-may-27-2026-gpt-56-leak-copilot-cowork-vuln-codegraph-ai-workforce-shift-1j1",
+    "title": "AI Daily Digest: May 27, 2026 — GPT-5.6 Leak, Copilot Cowork Vuln, CodeGraph & AI Workforce Shift",
+    "date": "2026-05-26T23:39:54.518Z"
+  },
+  {
+    "url": "https://dev.to/hiroki-ii-ai/ai-daily-digest-may-27-2026-gpt-56-leak-copilot-cowork-vuln-codegraph-ai-workforce-shift-1j1",
+    "title": "AI Daily Digest: May 27, 2026 — GPT-5.6 Leak, Copilot Cowork Vuln, CodeGraph & AI Workforce Shift",
+    "date": "2026-05-26T23:39:55.908Z"
+  },
+  {
+    "url": "https://dev.to/vektor_memory_43f51a32376/human-in-the-loop-the-most-important-concept-in-ai-that-keeps-you-employed-2df0",
+    "title": "Human-in-the-Loop: The Most Important Concept in AI That Keeps You Employed",
+    "date": "2026-05-26T23:39:57.449Z"
+  },
+  {
+    "url": "https://dev.to/muse_dam_88a49440a8e05801/ai-agent-content-governance-for-enterprise-a-complete-guide-4gi1",
+    "title": "AI Agent Content Governance for Enterprise — A Complete Guide",
+    "date": "2026-05-27T00:10:15.719Z"
+  },
+  {
+    "url": "https://dev.to/pvgomes/kubernetes-dra-is-making-ai-hardware-an-api-contract-13ge",
+    "title": "kubernetes dra is making ai hardware an api contract",
+    "date": "2026-05-27T00:10:17.472Z"
+  },
+  {
+    "url": "https://dev.to/leveragenotes/your-ai-tools-are-only-as-good-as-your-judgment-and-thats-the-point-4e8m",
+    "title": "Your AI Tools Are Only as Good as Your Judgment — And That's the Point",
+    "date": "2026-05-27T00:10:19.924Z"
+  },
+  {
+    "url": "https://dev.to/gandalfthegato/a-sec-filing-research-prompt-pack-for-source-aware-stock-research-152e",
+    "title": "A SEC filing research prompt pack for source-aware stock research",
+    "date": "2026-05-27T00:10:21.832Z"
+  },
+  {
+    "url": "https://dev.to/nsst/ai-dividend-investing-5b0a",
+    "title": "AI Dividend Investing",
+    "date": "2026-05-27T00:10:23.941Z"
+  },
+  {
+    "url": "https://dev.to/gandalfthegato/ai-dewatermark-tools-how-to-remove-watermarks-from-photos-you-own-5",
+    "title": "AI dewatermark tools: how to remove watermarks from photos you own",
+    "date": "2026-05-27T00:17:56.705Z"
+  },
+  {
+    "url": "https://dev.to/gandalfthegato/ai-dewatermark-tools-how-to-remove-watermarks-from-photos-you-own-5",
+    "title": "AI dewatermark tools: how to remove watermarks from photos you own",
+    "date": "2026-05-27T00:17:57.380Z"
   }
 ]

@@ -229,7 +229,7 @@ ul, ol { list-style: none; }
 /* ===== ARTICLE CARDS ===== */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -264,7 +264,8 @@ ul, ol { list-style: none; }
 }
 .article-card-body .tag { margin-bottom: 8px; align-self: flex-start; }
 .article-card-body h3 {
-  font-size: 16px; font-weight: 700; line-height: 1.35; margin-bottom: 8px;
+  font-size: 15px; font-weight: 700; line-height: 1.35; margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 .article-card-body h3 a { color: var(--text); }
 .article-card-body h3 a:hover { color: var(--primary); text-decoration: none; }
@@ -272,7 +273,7 @@ ul, ol { list-style: none; }
   font-size: 13px; color: var(--text-secondary);
   line-height: 1.5; flex: 1;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .article-card-meta {
   display: flex; align-items: center; justify-content: space-between;
@@ -296,7 +297,7 @@ ul, ol { list-style: none; }
 .scroll-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .scroll-row::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 .scroll-row .article-card {
-  min-width: 280px; max-width: 300px;
+  min-width: 340px; max-width: 360px;
   scroll-snap-align: start;
 }
 
@@ -683,6 +684,7 @@ ul, ol { list-style: none; }
   .content-with-sidebar { grid-template-columns: 1fr; }
   .sidebar { position: static; }
   .featured-grid { grid-template-columns: 1fr 1fr; }
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -712,7 +714,7 @@ ul, ol { list-style: none; }
   .static-page { margin: 32px auto; }
   .static-page h1 { font-size: 26px; }
 
-  .scroll-row .article-card { min-width: 260px; }
+  .scroll-row .article-card { min-width: 280px; }
   .hero-search { max-width: 100%; padding: 0 16px; }
   .hero-search input { height: 44px; font-size: 15px; }
 }

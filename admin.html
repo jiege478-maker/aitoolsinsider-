@@ -1,211 +1,1229 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - AI Tools Insider</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional"></noscript>
-  <link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 - AI Tools Insider</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=optional" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=optional"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:#f0f2f5;color:#1a1a2e}
+.admin-layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.sb-brand{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sb-brand h2{font-size:15px;font-weight:700}
+.sb-brand h2 span{color:#60a5fa}
+.sb-brand .sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px}
+.sb-nav{padding:8px 0;flex:1}
+.sb-nav a{display:flex;align-items:center;gap:8px;padding:9px 20px;color:rgba(255,255,255,0.45);text-decoration:none;font-size:13px;font-weight:500;transition:all 0.15s;border-right:3px solid transparent;cursor:pointer}
+.sb-nav a:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.sb-nav a.active{color:#60a5fa;background:rgba(96,165,250,0.1);border-right-color:#60a5fa}
+.sb-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(255,255,255,0.25)}
+.main{margin-left:220px;flex:1;padding:28px;min-height:100vh}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.top-bar h1{font-size:20px;font-weight:700}
+.top-bar .sub{font-size:12px;color:#64748b;margin-top:2px}
+.page{display:none}
+.page.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e8ecf0}
+.stat-card .lbl{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.stat-card .val{font-size:28px;font-weight:800;line-height:1.1}
+.stat-card .sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.stat-card.pb .val{color:#2563eb}
+.stat-card.gr .val{color:#059669}
+.stat-card.or .val{color:#d97706}
+.stat-card.pk .val{color:#d946ef}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.card{background:#fff;border-radius:10px;border:1px solid #e8ecf0;overflow:hidden}
+.card-hd{padding:12px 16px;border-bottom:1px solid #f0f2f5;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.card-bd{padding:14px 16px}
+.cat-list{display:flex;flex-direction:column;gap:8px}
+.cat-item{display:flex;align-items:center;gap:8px}
+.cat-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-item .nm{font-size:13px;color:#475569;width:80px;flex-shrink:0;font-weight:500}
+.cat-item .tr{flex:1;height:6px;background:#f0f2f5;border-radius:3px;overflow:hidden}
+.cat-item .fl{height:100%;border-radius:3px;transition:width 0.6s}
+.cat-item .cnt{font-size:12px;color:#64748b;font-weight:600;width:24px;text-align:right}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;background:#f8fafc;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #e8ecf0}
+td{padding:8px 12px;border-bottom:1px solid #f0f2f5;color:#334155;vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.bdg{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.bdg-w{background:#dbeafe;color:#1e40af}
+.bdg-i{background:#fce7f3;color:#9d174d}
+.bdg-c{background:#d1fae5;color:#065f46}
+.bdg-v{background:#fef3c7;color:#92400e}
+.bdg-p{background:#e0e7ff;color:#3730a3}
+.ls{text-align:center;padding:50px;color:#64748b}
+.ls .sp{width:24px;height:24px;border:3px solid #e8ecf0;border-top-color:#2563eb;border-radius:50%;animation:spin 0.6s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{text-align:center;padding:40px;color:#dc2626;font-size:13px}
+.ft{text-align:center;padding:20px;color:#94a3b8;font-size:12px;border-top:1px solid #e8ecf0;margin-top:24px}
+.login-overlay{position:fixed;inset:0;background:#f0f2f5;display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:#fff;border-radius:12px;padding:36px;width:340px;border:1px solid #e8ecf0}
+.login-box h1{font-size:18px;font-weight:700;margin-bottom:2px;text-align:center}
+.login-box p{font-size:13px;color:#64748b;margin-bottom:20px;text-align:center}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:4px}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;outline:none;transition:border-color 0.15s;font-family:inherit}
+.fg textarea{resize:vertical;min-height:60px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#2563eb}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;text-decoration:none}
+.btn-p{background:#1a1a2e;color:#fff}
+.btn-p:hover{background:#2d2d4a}
+.btn-s{background:#e8ecf0;color:#475569}
+.btn-s:hover{background:#d1d5db}
+.btn-d{background:#fef2f2;color:#dc2626}
+.btn-d:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.login-box .btn-p{width:100%;padding:10px;font-size:14px}
+.login-box .err-msg{background:#fef2f2;color:#dc2626;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:14px;display:none;text-align:center}
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;display:none;animation:fadeIn 0.2s;max-width:400px}
+.toast.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.toast.er{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.action-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px}
+.search-box{display:flex;gap:8px;flex:1;max-width:360px}
+.search-box input{flex:1;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;outline:none}
+.search-box input:focus{border-color:#2563eb}
+.editor-form{background:#fff;border:1px solid #e8ecf0;border-radius:10px;padding:24px;margin-bottom:24px}
+.editor-form h2{font-size:18px;font-weight:700;margin-bottom:16px}
+.editor-form .fg textarea{min-height:120px;font-family:monospace;font-size:12px;line-height:1.5}
+.editor-form .editor-content{min-height:300px}
+.editor-form .row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0}
+.editor-form .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:0}
+.checkbox-row{display:flex;gap:20px;align-items:center;margin-bottom:14px}
+.checkbox-row label{display:flex;align-items:center;gap:6px;font-size:13px;color:#475569;cursor:pointer}
+.btn-group{display:flex;gap:8px;margin-top:16px}
+.hot-terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px}
+.hot-term{background:#f8fafc;border:1px solid #e8ecf0;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.hot-term .name{font-size:13px;font-weight:600;color:#1a1a2e}
+.hot-term .weight{font-size:11px;color:#64748b;background:#e8ecf0;padding:2px 8px;border-radius:4px;font-weight:600}
+.crawl-stat{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.crawler-controls{background:#fff;border:1px solid #e8ecf0;border-radius:10px;padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.crawler-controls .status{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.crawler-controls .status.idle{background:#f0f2f5;color:#64748b}
+.crawler-controls .status.running{background:#dbeafe;color:#1e40af}
+.crawler-controls .status.done{background:#d1fae5;color:#065f46}
+.crawler-controls .status.er{background:#fef2f2;color:#dc2626}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-dot.idle{background:#94a3b8}
+.status-dot.running{background:#2563eb;animation:pulse 1s infinite}
+.status-dot.done{background:#059669}
+.status-dot.er{background:#dc2626}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.crawler-opts{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crawler-opts label{font-size:11px;color:#64748b;font-weight:600}
+.crawler-opts select,.crawler-opts input{border:1px solid #d1d5db;border-radius:5px;padding:4px 8px;font-size:12px;font-family:inherit;outline:none}
+.crawler-opts select:focus,.crawler-opts input:focus{border-color:#2563eb}
+.crawler-opts input[type=number]{width:60px}
+.crawler-opts .chk{display:flex;align-items:center;gap:4px;font-size:12px;color:#475569;cursor:pointer}
+.crawler-log{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:14px 16px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:12px;line-height:1.6;height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:18px}
+.crawler-log .log-line{opacity:0;animation:fadeIn 0.15s forwards}
+.crawler-log .log-line.error{color:#f87171}
+.crawler-log .log-line.success{color:#34d399}
+.crawler-log .log-line.skip{color:#94a3b8}
+.crawler-log .log-line.info{color:#60a5fa}
+.crawler-log .log-line.log{color:#e2e8f0}
+.crawler-log::-webkit-scrollbar{width:5px}
+.crawler-log::-webkit-scrollbar-track{background:#1e293b;border-radius:3px}
+.crawler-log::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
+.crawler-progress{height:4px;background:#e8ecf0;border-radius:2px;overflow:hidden;margin-bottom:18px}
+.crawler-progress .bar{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:2px;transition:width 0.5s;width:0%}
+.crawler-actions{display:flex;gap:8px;align-items:center}
+.conn-badge{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600}
+.conn-badge.ok{background:#d1fae5;color:#065f46}
+.conn-badge.er{background:#fef2f2;color:#dc2626;cursor:pointer}
+.crawl-stat div{background:#fff;border:1px solid #e8ecf0;border-radius:8px;padding:14px 18px;flex:1;min-width:120px}
+.crawl-stat div .l{font-size:11px;color:#64748b;font-weight:600}
+.crawl-stat div .v{font-size:20px;font-weight:700;margin-top:2px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:#fff;border-radius:12px;padding:28px;width:420px;max-width:90vw}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.modal p{font-size:13px;color:#64748b;margin-bottom:20px;line-height:1.5}
+.modal .btn-group{justify-content:flex-end}
+/* Preview overlay */
+.preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1001;display:none;align-items:center;justify-content:center;padding:20px}
+.preview-container{background:#fff;border-radius:12px;max-width:780px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.preview-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #e8ecf0;background:#f8fafc;flex-shrink:0}
+.preview-header h3{font-size:14px;font-weight:600}
+.preview-header .preview-url{font-size:11px;color:#64748b}
+.preview-body{padding:32px 40px;overflow-y:auto;flex:1}
+.preview-body .article-header{margin-bottom:24px}
+.preview-body .article-header h1{font-size:28px;font-weight:800;line-height:1.25;color:#1a1a2e;margin-bottom:12px}
+.preview-body .article-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:#64748b;flex-wrap:wrap}
+.preview-body .article-meta .dot{width:4px;height:4px;border-radius:50%;background:#d1d5db;display:inline-block}
+.preview-body .article-meta .cat-badge{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.preview-body .article-meta .rating{color:#d97706}
+.preview-body .article-body{font-size:16px;line-height:1.8;color:#334155}
+.preview-body .article-body h2{font-size:22px;font-weight:700;margin:28px 0 12px;color:#1a1a2e}
+.preview-body .article-body h3{font-size:18px;font-weight:600;margin:24px 0 10px;color:#1a1a2e}
+.preview-body .article-body p{margin-bottom:16px}
+.preview-body .article-body img{max-width:100%;border-radius:8px;margin:16px 0}
+.preview-body .article-body pre{background:#1a1a2e;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:14px;line-height:1.6}
+.preview-body .article-body code{background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:14px}
+.preview-body .article-body pre code{background:transparent;padding:0}
+.preview-body .article-body ul,.preview-body .article-body ol{padding-left:24px;margin-bottom:16px}
+.preview-body .article-body li{margin-bottom:6px}
+.preview-body .article-body blockquote{border-left:4px solid #2563eb;padding:12px 20px;margin:16px 0;background:#f8fafc;border-radius:4px}
+.preview-body .article-body a{color:#2563eb;text-decoration:underline}
+.preview-body .article-body hr{margin:24px 0;border:none;border-top:1px solid #e8ecf0}
+.preview-publish-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #e8ecf0;background:#fff;position:sticky;bottom:0;z-index:2}
+.preview-publish-bar .publish-hint{font-size:12px;color:#64748b}
+/* Publish confirm overlay */
+.publish-confirm .modal{width:460px}
+.publish-confirm .pub-opts{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.publish-confirm .pub-opts button{text-align:left;padding:12px 16px;border:1px solid #e8ecf0;border-radius:8px;background:#fff;cursor:pointer;transition:all 0.15s;font-size:13px;font-family:inherit}
+.publish-confirm .pub-opts button:hover{border-color:#2563eb;background:#f8fafc}
+.publish-confirm .pub-opts button .title{font-weight:600;color:#1a1a2e}
+.publish-confirm .pub-opts button .desc{font-size:11px;color:#64748b;margin-top:2px}
+@media(max-width:900px){
+.sidebar{display:none}
+.main{margin-left:0;padding:14px}
+.stats-row{grid-template-columns:1fr 1fr}
+.row-2,.editor-form .row-2,.editor-form .row-3{grid-template-columns:1fr}
+}
+@media(max-width:500px){.stats-row,.hot-terms{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-inner">
-    <a href="/" class="logo">AI <span>Tools</span> Insider</a>
-    <nav>
-      <ul class="nav">
-        <li><a href="/">View Site</a></li>
-        <li><a href="/admin.html" class="active">Admin</a></li>
-      </ul>
-    </nav>
+<!-- Login -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <h1>AI Tools Insider</h1>
+    <p>管理后台</p>
+    <div class="err-msg" id="loginError">密码错误</div>
+    <div class="fg"><label>访问密码</label><input type="password" id="accessCode" placeholder="请输入管理员密码" onkeydown="if(event.key==='Enter')checkAccess()"></div>
+    <button class="btn btn-p" onclick="checkAccess()">登 录</button>
   </div>
-</header>
+</div>
 
-<main class="admin-page" id="adminApp">
-  <!-- Login Screen -->
-  <div id="loginScreen">
-    <div class="login-container">
-      <h1>Admin Login</h1>
-      <p>Sign in to manage articles</p>
-      <form class="login-form" id="loginForm">
-        <div class="login-error" id="loginError"></div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" required placeholder="admin@example.com">
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" required placeholder="Enter password">
-        </div>
-        <button type="button" id="loginBtn" class="btn btn-primary" style="width:100%;justify-content:center;" onclick="adminLogin()">Sign In</button>
-      </form>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Admin App -->
+<div class="admin-layout" id="adminApp" style="display:none;">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sb-brand"><h2>AI <span>Tools</span> Insider</h2><div class="sub">管理后台 v2.0</div></div>
+  <div class="sb-nav">
+    <a class="active" onclick="switchTab('dashboard')">📊 仪表盘</a>
+    <a onclick="switchTab('articles')">📝 文章管理</a>
+    <a onclick="switchTab('crawler')">🤖 爬虫管理</a>
+    <a href="/" target="_blank" style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px">🌐 查看网站</a>
+  </div>
+  <div class="sb-footer">v2.0 &copy; 2026</div>
+</aside>
+
+<div class="main">
+
+<!-- ==================== DASHBOARD ==================== -->
+<div class="page active" id="page-dashboard">
+  <div class="top-bar">
+    <div><h1>仪表盘</h1><div class="sub" id="currentDate"></div></div>
+    <span style="font-size:11px;color:#94a3b8" id="lastUpdated"></span>
+  </div>
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card pb"><div class="lbl">文章总数</div><div class="val" id="statTotal">—</div><div class="sub" id="statSub">加载中...</div></div>
+    <div class="stat-card gr"><div class="lbl">分类数</div><div class="val" id="statCategories">—</div><div class="sub">有内容分类</div></div>
+    <div class="stat-card or"><div class="lbl">平均阅读时间</div><div class="val" id="statAvgTime" style="font-size:22px">—</div><div class="sub">分钟</div></div>
+    <div class="stat-card pk"><div class="lbl">总字数</div><div class="val" id="statTotalWords" style="font-size:22px">—</div><div class="sub">全部文章合计</div></div>
+  </div>
+  <div class="row-2">
+    <div class="card"><div class="card-hd">分类内容分布</div><div class="card-bd" id="categoryBars"><div class="ls"><div class="sp"></div></div></div></div>
+    <div class="card"><div class="card-hd">站点概览</div><div class="card-bd" id="siteOverview"><div class="ls"><div class="sp"></div></div></div></div>
+  </div>
+</div>
+
+<!-- ==================== ARTICLES ==================== -->
+<div class="page" id="page-articles">
+  <div class="top-bar">
+    <div><h1>文章管理</h1><div class="sub" id="articleSub">管理全部文章</div></div>
+    <div><button class="btn btn-p btn-sm" onclick="openEditor()">+ 新建文章</button></div>
+  </div>
+
+  <!-- Editor Form -->
+  <div class="editor-form" id="editorForm" style="display:none">
+    <h2 id="editorTitle">新建文章</h2>
+    <div class="row-2">
+      <div class="fg"><label>标题</label><input id="ef_title" placeholder="文章标题"></div>
+      <div class="fg"><label>链接标识 (Slug)</label><input id="ef_slug" placeholder="例如: best-ai-writing-tools"></div>
+    </div>
+    <div class="fg"><label>元描述 (SEO)</label><textarea id="ef_desc" rows="2" placeholder="SEO 元描述（150-160 字符）"></textarea></div>
+    <div class="row-3">
+      <div class="fg"><label>分类</label><select id="ef_cat"></select></div>
+      <div class="fg"><label>阅读时间 (分钟)</label><input type="number" id="ef_read" min="1" max="60" value="5"></div>
+      <div class="fg"><label>评分 (0-5)</label><input type="number" id="ef_rating" min="0" max="5" step="0.5" value="0"></div>
+    </div>
+    <div class="fg"><label>标签 (逗号分隔)</label><input id="ef_tags" placeholder="ai, tutorial, writing"></div>
+    <div class="checkbox-row">
+      <label><input type="checkbox" id="ef_published" checked> 已发布</label>
+    </div>
+    <div class="fg"><label>内容 (HTML)</label><textarea id="ef_content" rows="20" style="font-family:monospace;font-size:13px;line-height:1.6;min-height:400px"></textarea></div>
+    <div class="btn-group">
+      <button class="btn btn-p" onclick="saveArticle()">💾 保存文章</button>
+      <button class="btn btn-s" onclick="previewArticle()">👁 预览</button>
+      <button class="btn btn-s" onclick="closeEditor()">取消</button>
     </div>
   </div>
 
-  <!-- Admin Dashboard -->
-  <div id="dashboardScreen" style="display:none;">
-    <div class="admin-header">
-      <div>
-        <h1>Articles</h1>
-        <p style="color:var(--text-secondary);font-size:14px;" id="adminEmail"></p>
-      </div>
-      <div class="admin-actions">
-        <button class="btn btn-primary btn-sm" id="newArticleBtn">+ New Article</button>
-        <button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
-      </div>
-    </div>
-
-    <div id="editorForm" style="display:none;">
-      <h2 id="formTitle" style="font-size:20px;font-weight:700;margin-bottom:16px;">New Article</h2>
-      <form id="articleForm">
-        <div class="form-group">
-          <label for="articleTitle">Title</label>
-          <input type="text" id="articleTitle" required>
-        </div>
-        <div class="form-group">
-          <label for="articleSlug">Slug (URL path)</label>
-          <input type="text" id="articleSlug" required placeholder="e.g. best-ai-writing-tools">
-        </div>
-        <div class="form-group">
-          <label for="articleDescription">Description / Meta description</label>
-          <textarea id="articleDescription" rows="2" required></textarea>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="form-group">
-            <label for="articleCategory">Category</label>
-            <select id="articleCategory" required></select>
-          </div>
-          <div class="form-group">
-            <label for="articleReadTime">Read time (minutes)</label>
-            <input type="number" id="articleReadTime" min="1" max="60" value="5">
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="form-group">
-            <label for="articleRating">Rating (0-5)</label>
-            <input type="number" id="articleRating" min="0" max="5" step="0.5" value="0" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label for="articleTags">Tags (comma separated)</label>
-            <input type="text" id="articleTags" placeholder="writing, productivity, review">
-          </div>
-        </div>
-        <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="checkbox-label">
-              <input type="checkbox" id="articlePublished"> Published
-            </label>
-          </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="checkbox-label">
-              <input type="checkbox" id="articleFeatured"> Featured
-            </label>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Content</label>
-          <div class="editor-container">
-            <div class="editor-toolbar" id="editorToolbar">
-              <button type="button" data-cmd="h2">H2</button>
-              <button type="button" data-cmd="h3">H3</button>
-              <div class="sep"></div>
-              <button type="button" data-cmd="bold"><b>B</b></button>
-              <button type="button" data-cmd="italic"><i>I</i></button>
-              <div class="sep"></div>
-              <button type="button" data-cmd="ul">UL</button>
-              <button type="button" data-cmd="ol">OL</button>
-              <div class="sep"></div>
-              <button type="button" data-cmd="link">Link</button>
-              <button type="button" data-cmd="quote">Quote</button>
-              <div class="sep"></div>
-              <button type="button" data-cmd="image">🖼 Image</button>
-              <button type="button" data-cmd="video">▶ Video</button>
-            </div>
-            <div class="editor-content" id="editorContent" contenteditable="true"></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:16px;">
-          <button type="submit" class="btn btn-primary">Save Article</button>
-          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
-        </div>
-      </form>
-    </div>
-
-    <div id="articlesList">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Rating</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="articlesTableBody"></tbody>
+  <!-- Articles Table -->
+  <div class="card">
+    <div class="card-hd"><span>全部文章</span><span style="font-size:11px;color:#94a3b8;font-weight:400" id="articleCount"></span></div>
+    <div class="tw">
+      <div class="ls" id="artLoading"><div class="sp"></div>加载文章中...</div>
+      <div class="err" id="artError" style="display:none"></div>
+      <table id="artTable" style="display:none">
+        <thead><tr><th>ID</th><th>标题</th><th>分类</th><th>状态</th><th>阅读</th><th>评分</th><th style="width:100px">操作</th></tr></thead>
+        <tbody id="artBody"></tbody>
       </table>
     </div>
   </div>
-</main>
+</div>
 
-<div class="toast" id="toast"></div>
+<!-- ==================== CRAWLER ==================== -->
+<div class="page" id="page-crawler">
+  <div class="top-bar">
+    <div><h1>爬虫管理</h1><div class="sub">热词监控 &amp; 实时爬取</div></div>
+    <div><button class="btn btn-s btn-sm" onclick="refreshCrawler()">🔄 刷新</button></div>
+  </div>
+
+  <!-- Crawler Controls -->
+  <div class="crawler-controls">
+    <div class="status idle" id="crawlerStatusBadge">
+      <span class="status-dot idle" id="crawlerStatusDot"></span>
+      <span id="crawlerStatusText">空闲</span>
+    </div>
+    <div class="crawler-actions">
+      <button class="btn btn-p btn-sm" id="btnStartCrawl" onclick="crawlStart()">▶ 启动爬虫</button>
+      <button class="btn btn-d btn-sm" id="btnStopCrawl" onclick="crawlStop()" style="display:none">⏹ 停止</button>
+    </div>
+    <div class="crawler-opts">
+      <label>数量</label>
+      <input type="number" id="crawlLimit" value="20" min="1" max="100">
+      <label>并发</label>
+      <input type="number" id="crawlConcurrency" value="10" min="1" max="20">
+      <label>来源</label>
+      <select id="crawlSource">
+        <option value="">全部</option>
+        <option value="devto">Dev.to</option>
+        <option value="medium">Medium</option>
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="crawlHotOnly"> 仅热词</label>
+      <label class="chk"><input type="checkbox" id="crawlDryRun"> 试运行</label>
+    </div>
+    <span class="conn-badge er" id="connBadge" title="点击重连" onclick="crawlConnect()">● 未连接</span>
+    <input type="text" id="crawlerServerAddr" value="localhost:3456" style="width:130px;border:1px solid #d1d5db;border-radius:5px;padding:3px 6px;font-size:11px;font-family:monospace" title="爬虫服务地址" onchange="updateServerAddr()">
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="crawler-progress">
+    <div class="bar" id="crawlerProgressBar"></div>
+  </div>
+
+  <!-- Log Output -->
+  <div class="crawler-log" id="crawlerLog"></div>
+
+  <!-- Stats row -->
+  <div class="crawl-stat" id="crawlStats">
+    <div><div class="l">已处理</div><div class="v" id="cl_processed">0</div></div>
+    <div><div class="l">已上传</div><div class="v" id="cl_uploaded">0</div></div>
+    <div><div class="l">已跳过</div><div class="v" id="cl_skipped">0</div></div>
+    <div><div class="l">错误</div><div class="v" id="cl_errors">0</div></div>
+    <div><div class="l">数据库总数</div><div class="v" id="cl_total">—</div></div>
+  </div>
+
+  <div style="font-size:12px;color:#64748b;margin-bottom:18px;padding:0 4px">
+    <strong>上次运行:</strong> <span id="cl_lastRun">未知</span>
+  </div>
+
+  <!-- Hot Terms -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-hd">
+      <span>📈 热门关键词（实时） <span id="hotCount">0</span></span>
+      <span>
+        <span id="hotLastFetched" style="font-size:10px;color:#94a3b8;font-weight:400;margin-right:8px"></span>
+        <button class="btn btn-s btn-xs" onclick="refreshHotTerms()">🔄 刷新热词</button>
+      </span>
+    </div>
+    <div class="card-bd">
+      <div class="hot-terms" id="hotTermsList"><div class="ls" style="padding:20px"><div class="sp"></div>加载中...</div></div>
+      <details>
+        <summary style="font-size:12px;color:#64748b;cursor:pointer;padding:4px 0">查看原始 HOT_TERMS 配置 (JS)</summary>
+        <pre id="hotTermsRaw" style="background:#f8fafc;border:1px solid #e8ecf0;border-radius:6px;padding:12px;font-size:11px;overflow-x:auto;margin-top:8px;white-space:pre-wrap"></pre>
+      </details>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">命令行运行方式</div>
+    <div class="card-bd">
+      <pre style="background:#1a1a2e;color:#e8ecf0;border-radius:8px;padding:16px;font-size:12px;overflow-x:auto;line-height:1.6">
+<span style="color:#60a5fa"># 启动 WebSocket 服务（后台控制需要）</span>
+cd crawler && node crawler-server.js
+
+<span style="color:#60a5fa"># 或者直接运行爬虫</span>
+cd crawler && LIMIT=20 CONCURRENCY=10 node crawler.js
+
+<span style="color:#60a5fa"># 仅爬取含热词的文章</span>
+cd crawler && HOT_TERMS_ONLY=true LIMIT=20 CONCURRENCY=10 node crawler.js</pre>
+    </div>
+  </div>
+</div>
+
+<div class="ft">AI Tools Insider 管理后台 v2.0 &copy; 2026</div>
+
+</div><!-- /main -->
+</div><!-- /admin-layout -->
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>删除文章</h3>
+    <p id="deleteMsg">确定要删除这篇文章吗？此操作不可撤销。</p>
+    <div class="btn-group">
+      <button class="btn btn-d btn-sm" id="confirmDeleteBtn">删除</button>
+      <button class="btn btn-s btn-sm" onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Publish Confirm Modal -->
+<div id="publishModal" class="modal-overlay publish-confirm" style="display:none">
+  <div class="modal">
+    <h3>确认发布</h3>
+    <p style="font-size:13px;color:#64748b">选择发布方式：</p>
+    <div class="pub-opts" id="publishOptions"></div>
+    <div class="btn-group">
+      <button class="btn btn-s btn-sm" onclick="closePublishModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Overlay -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-container">
+    <div class="preview-header">
+      <div>
+        <h3>文章预览</h3>
+        <span class="preview-url" id="previewUrl">toolrankly.com/article?slug=...</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-p btn-sm" onclick="publishFromPreview()" id="previewPublishBtn">📢 发布</button>
+        <button class="btn btn-s btn-sm" onclick="closePreview()">✕ 关闭</button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <div class="article-header">
+        <div id="previewTags"></div>
+        <h1 id="previewTitle"></h1>
+        <div class="article-meta">
+          <span class="cat-badge" id="previewCategory"></span>
+          <span class="dot"></span>
+          <span id="previewReadTime"></span>
+          <span class="dot"></span>
+          <span id="previewDate"></span>
+          <span id="previewRating" class="rating"></span>
+        </div>
+      </div>
+      <div class="article-body" id="previewBody"></div>
+    </div>
+    <div class="preview-publish-bar">
+      <span class="publish-hint">💡 预览效果与实际前端展示一致</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-p btn-sm" onclick="publishFromPreview()">📢 发布到网站</button>
+        <button class="btn btn-s btn-sm" onclick="saveAsDraftFromPreview()">💾 仅存草稿</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-// Inline login handler - global function for onclick
-var ADMIN_API_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
-var ADMIN_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps';
+// ===== CONFIG =====
+const ADMIN_PASS = 'admin888';
+const SUPABASE_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
+const ADMIN_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTgxMzU4NiwiZXhwIjoyMDk1Mzg5NTg2fQ.Z9V0aHGsrRQjgb4C1F3V4WzfTpGlJUgA34OKI3U09bc';
+const CAT_NAMES = {1:'写作',2:'图像',3:'编程',4:'视频',5:'效率工具'};
+const CAT_COLORS = {1:'#2563eb',2:'#d946ef',3:'#059669',4:'#d97706',5:'#6366f1'};
+const CAT_BADGE = {1:'bdg-w',2:'bdg-i',3:'bdg-c',4:'bdg-v',5:'bdg-p'};
 
-function adminLogin() {
-  var email = document.getElementById('email').value;
-  var password = document.getElementById('password').value;
-  var errorDiv = document.getElementById('loginError');
-  if (!email || !password) { alert('Please enter email and password.'); return; }
+const HOT_TERMS = [
+  {term:'AI Agent',weight:30,keyword:'ai-agent'},{term:'DeepSeek',weight:25,keyword:'deepseek'},
+  {term:'Claude',weight:20,keyword:'claude'},{term:'ChatGPT',weight:20,keyword:'chatgpt'},
+  {term:'Gemini',weight:18,keyword:'gemini'},{term:'Perplexity',weight:15,keyword:'perplexity'},
+  {term:'Copilot',weight:15,keyword:'copilot'},{term:'Midjourney',weight:12,keyword:'midjourney'},
+  {term:'Stable Diffusion',weight:12,keyword:'stable-diffusion'},{term:'Multimodal AI',weight:12,keyword:'multimodal-ai'},
+  {term:'AI Code Generation',weight:12,keyword:'ai-code-generation'},{term:'LLM',weight:10,keyword:'llm'},
+  {term:'OpenAI',weight:10,keyword:'openai'},{term:'Anthropic',weight:10,keyword:'anthropic'},
+  {term:'RAG',weight:8,keyword:'rag'},{term:'fine-tuning',weight:8,keyword:'fine-tuning'},
+  {term:'vector database',weight:8,keyword:'vector-database'},{term:'prompt engineering',weight:8,keyword:'prompt-engineering'},
+  {term:'AI video',weight:8,keyword:'ai-video'},{term:'AI image',weight:8,keyword:'ai-image'}
+];
 
-  errorDiv.textContent = 'Logging in...';
-  errorDiv.style.display = 'block';
-  errorDiv.style.background = '#e8f0fe';
-  errorDiv.style.color = '#0056D2';
+// ===== AUTH =====
+function checkAccess() {
+  var c = document.getElementById('accessCode').value;
+  if(!c) return;
+  if(c === ADMIN_PASS) {
+    localStorage.setItem('admin_access','1');
+    document.getElementById('loginOverlay').style.display='none';
+    document.getElementById('adminApp').style.display='flex';
+    loadDashboard();
+  } else {
+    var e=document.getElementById('loginError');
+    e.textContent='密码错误';e.style.display='block';
+  }
+}
+(function(){
+  if(localStorage.getItem('admin_access')==='1'){
+    document.getElementById('loginOverlay').style.display='none';
+    document.getElementById('adminApp').style.display='flex';
+    document.addEventListener('DOMContentLoaded',loadDashboard);
+  }
+})();
 
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', ADMIN_API_URL + '/auth/v1/token?grant_type=password', true);
-  xhr.setRequestHeader('apikey', ADMIN_API_KEY);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      var data = JSON.parse(xhr.responseText);
-      localStorage.setItem('sb-access-token', data.access_token);
-      localStorage.setItem('sb-refresh-token', data.refresh_token);
-      errorDiv.textContent = 'Login successful! Loading dashboard...';
-      errorDiv.style.background = '#ecfdf5';
-      errorDiv.style.color = '#059669';
-      location.reload();
+// ===== API =====
+async function api(path, opts) {
+  var headers={'apikey':ADMIN_KEY,'Authorization':'Bearer '+ADMIN_KEY,'Content-Type':'application/json'};
+  if(opts&&opts.headers) Object.assign(headers,opts.headers);
+  var res=await fetch(SUPABASE_URL+path,{method:(opts&&opts.method)||'GET',headers,body:opts&&opts.body});
+  if(!res.ok){var t;try{t=await res.text()}catch(e){t=res.status} throw new Error(t||res.status)}
+  return res.json();
+}
+
+// ===== TAB SWITCHING =====
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.sb-nav a').forEach(function(a){a.classList.remove('active')});
+  var el=document.querySelector('.sb-nav a[onclick*="'+name+'"]');
+  if(el)el.classList.add('active');
+  if(name==='dashboard')loadDashboard();
+  if(name==='articles')loadArticles();
+  if(name==='crawler')loadCrawler();
+}
+
+// ===== TOAST =====
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+(type||'ok');t.style.display='block';
+  clearTimeout(t._hide);t._hide=setTimeout(function(){t.style.display='none'},3000);
+}
+
+// ================ DASHBOARD ================
+async function loadDashboard() {
+  document.getElementById('currentDate').textContent=new Date().toLocaleDateString('zh-CN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  try {
+    var [articles,pubArt] = await Promise.all([
+      api('/rest/v1/articles?select=id,title,slug,category_id,read_time,rating,created_at,description'),
+      api('/rest/v1/articles?select=id&published=eq.true')
+    ]);
+    renderDashboard(articles,pubArt.length);
+  } catch(e) {
+    document.getElementById('categoryBars').innerHTML='<div class="err">加载失败: '+e.message+'</div>';
+  }
+}
+function renderDashboard(articles,pubCount){
+  document.getElementById('lastUpdated').textContent='更新于 '+new Date().toLocaleTimeString();
+  var total=articles.length;
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statSub').textContent=pubCount+' 已发布 · '+(total-pubCount)+' 草稿';
+  var cc={},trt=0,tw=0;
+  articles.forEach(function(a){
+    var c=a.category_id||0;cc[c]=(cc[c]||0)+1;
+    trt+=a.read_time||5;
+    if(a.description)tw+=a.description.split(/\s+/).length;
+  });
+  document.getElementById('statCategories').textContent=Object.keys(cc).filter(function(k){return k!='0'}).length;
+  document.getElementById('statAvgTime').textContent=total?(trt/total).toFixed(1):'—';
+  document.getElementById('statTotalWords').textContent=tw>1000?Math.round(tw/1000)+'K':tw;
+  var max=Math.max.apply(null,Object.values(cc));
+  var bh='<div class="cat-list">';
+  Object.keys(CAT_NAMES).forEach(function(id){
+    var n=cc[id]||0,p=max>0?(n/max*100):0;
+    bh+='<div class="cat-item"><div class="dot" style="background:'+CAT_COLORS[id]+'"></div><div class="nm">'+CAT_NAMES[id]+'</div><div class="tr"><div class="fl" style="width:'+p+'%;background:'+CAT_COLORS[id]+'"></div></div><div class="cnt">'+n+'</div></div>';
+  });
+  bh+='</div>';
+  document.getElementById('categoryBars').innerHTML=bh;
+  var oh='<div style="font-size:13px;color:#475569;line-height:1.8">';
+  var lat=articles.slice().sort(function(a,b){return new Date(b.created_at||0)-new Date(a.created_at||0)})[0];
+  oh+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#94a3b8">最新文章</span><span style="font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(lat.title||'').substring(0,45)+'</span></div>';
+  oh+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#94a3b8">最新 ID</span><span style="font-weight:500">#'+(lat.id||'—')+'</span></div>';
+  var slug=articles.filter(function(a){return a.slug&&a.slug.startsWith('github-')}).length;
+  var doc=articles.filter(function(a){return a.slug&&a.slug.startsWith('doc-')}).length;
+  oh+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#94a3b8">爬取文章</span><span style="font-weight:500">'+(total-slug-doc)+'</span></div>';
+  oh+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#94a3b8">GitHub 仓库</span><span style="font-weight:500">'+slug+'</span></div>';
+  oh+='<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#94a3b8">官方文档</span><span style="font-weight:500">'+doc+'</span></div>';
+  oh+='</div>';
+  document.getElementById('siteOverview').innerHTML=oh;
+}
+
+// ================ ARTICLES CRUD ================
+var currentEditId = null;
+var _previewArticleId = null;
+
+async function loadArticles() {
+  document.getElementById('artLoading').style.display='';document.getElementById('artLoading').innerHTML='<div class="sp"></div>加载中...';
+  document.getElementById('artTable').style.display='none';
+  document.getElementById('artError').style.display='none';
+  try {
+    var articles = await api('/rest/v1/articles?select=*,categories(id,name)&order=created_at.desc');
+    renderArticles(articles);
+  } catch(e) {
+    document.getElementById('artLoading').style.display='none';
+    document.getElementById('artError').style.display='block';
+    document.getElementById('artError').textContent='加载失败: '+e.message;
+  }
+}
+
+function renderArticles(articles) {
+  document.getElementById('articleSub').textContent='共 '+articles.length+' 篇文章';
+  document.getElementById('articleCount').textContent=articles.length+' 篇';
+  document.getElementById('artLoading').style.display='none';
+  document.getElementById('artTable').style.display='';
+
+  var html='';
+  articles.forEach(function(a){
+    var cn=CAT_NAMES[a.category_id]||'—',bg=CAT_BADGE[a.category_id]||'',st=a.published?'<span style="color:#059669">已发布</span>':'<span style="color:#94a3b8">草稿</span>';
+    var date=a.created_at?new Date(a.created_at).toLocaleDateString('zh-CN',{month:'short',day:'numeric'}):'—';
+    html+='<tr><td style="color:#94a3b8;font-size:11px">'+(a.id||'')+'</td>'+
+      '<td><a href="/article?slug='+encodeURIComponent(a.slug||'')+'" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:500">'+(a.title||'').substring(0,55)+'</a></td>'+
+      '<td><span class="bdg '+bg+'">'+cn+'</span></td>'+
+      '<td>'+st+'</td>'+
+      '<td>'+(a.read_time||'—')+'m</td>'+
+      '<td>'+(a.rating||'—')+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+      '<button class="btn btn-s btn-xs" onclick="openEditor('+a.id+')">✏️</button>'+
+      '<button class="btn btn-s btn-xs" onclick="previewArticle('+a.id+')">👁</button>'+
+      '<button class="btn btn-d btn-xs" onclick="confirmDelete('+a.id+')">🗑️</button></div></td></tr>';
+  });
+  document.getElementById('artBody').innerHTML=html;
+}
+
+async function openEditor(id) {
+  currentEditId = id || null;
+  document.getElementById('editorForm').style.display='';
+  document.getElementById('editorTitle').textContent=id?'编辑文章':'新建文章';
+
+  // Populate categories
+  var sel=document.getElementById('ef_cat');
+  sel.innerHTML='';
+  Object.keys(CAT_NAMES).forEach(function(k){
+    var o=document.createElement('option');o.value=k;o.textContent=CAT_NAMES[k];sel.appendChild(o);
+  });
+
+  if(id) {
+    try {
+      var arts=await api('/rest/v1/articles?id=eq.'+id+'&select=*');
+      var a=Array.isArray(arts)?arts[0]:arts;
+      if(!a){toast('文章未找到','er');return}
+      document.getElementById('ef_title').value=a.title||'';
+      document.getElementById('ef_slug').value=a.slug||'';
+      document.getElementById('ef_desc').value=a.description||'';
+      document.getElementById('ef_cat').value=a.category_id||1;
+      document.getElementById('ef_read').value=a.read_time||5;
+      document.getElementById('ef_rating').value=a.rating||0;
+      document.getElementById('ef_tags').value=(a.tags||[]).join(', ');
+      document.getElementById('ef_published').checked=a.published!==false;
+      document.getElementById('ef_content').value=a.content||'';
+    } catch(e) {toast('加载文章失败: '+e.message,'er');}
+  } else {
+    document.getElementById('ef_title').value='';
+    document.getElementById('ef_slug').value='';
+    document.getElementById('ef_desc').value='';
+    document.getElementById('ef_cat').value=1;
+    document.getElementById('ef_read').value=5;
+    document.getElementById('ef_rating').value=0;
+    document.getElementById('ef_tags').value='';
+    document.getElementById('ef_published').checked=true;
+    document.getElementById('ef_content').value='';
+  }
+  // Scroll to editor
+  document.getElementById('editorForm').scrollIntoView({behavior:'smooth'});
+}
+
+function closeEditor() {
+  document.getElementById('editorForm').style.display='none';
+  currentEditId=null;
+}
+
+// --- Preview ---
+
+function getFormData() {
+  return {
+    title: document.getElementById('ef_title').value.trim(),
+    slug: document.getElementById('ef_slug').value.trim(),
+    desc: document.getElementById('ef_desc').value.trim(),
+    cat: parseInt(document.getElementById('ef_cat').value),
+    read: parseInt(document.getElementById('ef_read').value) || 5,
+    rating: parseFloat(document.getElementById('ef_rating').value) || 0,
+    tags: document.getElementById('ef_tags').value.split(',').map(function(s){return s.trim()}).filter(Boolean),
+    published: document.getElementById('ef_published').checked,
+    content: document.getElementById('ef_content').value,
+  };
+}
+
+async function previewArticle(id) {
+  // If an ID is provided, load from DB directly for preview (no editor)
+  if (id && id !== true) {
+    try {
+      var arts = await api('/rest/v1/articles?id=eq.' + id + '&select=*');
+      var a = Array.isArray(arts) ? arts[0] : arts;
+      if (!a) { toast('文章未找到', 'er'); return; }
+      // Temporarily set form fields for preview only
+      document.getElementById('ef_title').value = a.title || '';
+      document.getElementById('ef_slug').value = a.slug || '';
+      document.getElementById('ef_desc').value = a.description || '';
+      document.getElementById('ef_cat').value = a.category_id || 1;
+      document.getElementById('ef_read').value = a.read_time || 5;
+      document.getElementById('ef_rating').value = a.rating || 0;
+      document.getElementById('ef_tags').value = (a.tags || []).join(', ');
+      document.getElementById('ef_published').checked = a.published !== false;
+      document.getElementById('ef_content').value = a.content || '';
+      _previewArticleId = id;
+    } catch (e) { toast('加载失败: ' + e.message, 'er'); return; }
+  }
+
+  var data = getFormData();
+  if (!data.title) { toast('请先输入标题', 'er'); return; }
+  if (!data.content) { toast('请先输入内容', 'er'); return; }
+
+  // Render preview
+  document.getElementById('previewTitle').textContent = data.title;
+  document.getElementById('previewUrl').textContent = 'toolrankly.com/article?slug=' + (data.slug || 'untitled');
+  document.getElementById('previewCategory').textContent = CAT_NAMES[data.cat] || '未分类';
+  document.getElementById('previewReadTime').textContent = data.read + ' 分钟阅读';
+  document.getElementById('previewDate').textContent = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('previewRating').textContent = data.rating > 0 ? '★ ' + data.rating : '';
+  document.getElementById('previewTags').innerHTML = data.tags.slice(0, 4).map(function(t) {
+    return '<span class="badge" style="background:#e8ecf0;color:#475569;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:6px">#' + t + '</span>';
+  }).join('');
+
+  // Render content (HTML)
+  // Strip source attribution line for preview
+  var content = data.content;
+  content = content.replace(/<hr>[\s\S]*?<\/em><\/p>/, '');
+  document.getElementById('previewBody').innerHTML = content;
+
+  // Show preview
+  document.getElementById('previewOverlay').style.display = 'block';
+  document.getElementById('previewOverlay').scrollTop = 0;
+
+  // Show/hide publish button based on current state
+  var publishBtn = document.getElementById('previewPublishBtn');
+  if (data.published) {
+    publishBtn.textContent = currentEditId ? '📢 更新发布' : '📢 发布';
+    publishBtn.style.display = '';
+  } else {
+    publishBtn.textContent = '📢 发布';
+    publishBtn.style.display = '';
+  }
+}
+
+function closePreview() {
+  document.getElementById('previewOverlay').style.display = 'none';
+}
+
+async function publishFromPreview() {
+  closePreview();
+  if (_previewArticleId) {
+    try {
+      await api('/rest/v1/articles?id=eq.' + _previewArticleId, {
+        method: 'PATCH',
+        body: JSON.stringify({ published: true, updated_at: new Date().toISOString() })
+      });
+      toast('文章已发布！', 'ok');
+      _previewArticleId = null;
+      loadArticles();
+    } catch (e) { toast('发布失败: ' + e.message, 'er'); }
+    return;
+  }
+  // Fallback: use editor form
+  document.getElementById('ef_published').checked = true;
+  doSaveArticle(true);
+}
+
+async function saveAsDraftFromPreview() {
+  closePreview();
+  if (_previewArticleId) {
+    _previewArticleId = null;
+    loadArticles();
+    return;
+  }
+  document.getElementById('ef_published').checked = false;
+  doSaveArticle(true);
+}
+
+// --- Save with publish confirmation ---
+
+async function saveArticle() {
+  var data = getFormData();
+  if (!data.title || !data.slug) { toast('标题和链接标识不能为空', 'er'); return; }
+  if (!data.content) { toast('内容不能为空', 'er'); return; }
+
+  // If "已发布" is checked, show publish confirmation
+  if (data.published) {
+    showPublishConfirm();
+  } else {
+    doSaveArticle();
+  }
+}
+
+function showPublishConfirm() {
+  var modal = document.getElementById('publishModal');
+  var opts = document.getElementById('publishOptions');
+  var isNew = !currentEditId;
+
+  opts.innerHTML = '';
+  var actions = [
+    {
+      title: isNew ? '📢 发布到网站' : '📢 更新并发布',
+      desc: isNew ? '文章将立即对访客可见' : '更新已发布文章，更改立即可见',
+      action: function() { closePublishModal(); doSaveArticle(true); },
+    },
+    {
+      title: '💾 仅保存草稿',
+      desc: '保存为草稿，暂不公开发布',
+      action: function() { closePublishModal(); document.getElementById('ef_published').checked = false; doSaveArticle(true); },
+    },
+    {
+      title: '👁 先预览',
+      desc: '查看发布效果后再决定',
+      action: function() { closePublishModal(); previewArticle(true); },
+    },
+  ];
+
+  actions.forEach(function(a) {
+    var btn = document.createElement('button');
+    btn.innerHTML = '<div class="title">' + a.title + '</div><div class="desc">' + a.desc + '</div>';
+    btn.onclick = a.action;
+    opts.appendChild(btn);
+  });
+
+  modal.style.display = 'flex';
+}
+
+function closePublishModal() {
+  document.getElementById('publishModal').style.display = 'none';
+}
+
+async function doSaveArticle(skipConfirm) {
+  var title = document.getElementById('ef_title').value.trim();
+  var slug = document.getElementById('ef_slug').value.trim();
+  var desc = document.getElementById('ef_desc').value.trim();
+  var cat = parseInt(document.getElementById('ef_cat').value);
+  var read = parseInt(document.getElementById('ef_read').value) || 5;
+  var rating = parseFloat(document.getElementById('ef_rating').value) || 0;
+  var tags = document.getElementById('ef_tags').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var published = document.getElementById('ef_published').checked;
+  var content = document.getElementById('ef_content').value;
+
+  var data = {
+    title: title,
+    slug: slug,
+    description: desc,
+    content: content,
+    category_id: cat,
+    read_time: read,
+    rating: rating,
+    tags: tags,
+    published: published,
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    if (currentEditId) {
+      await api('/rest/v1/articles?id=eq.' + currentEditId, { method: 'PATCH', body: JSON.stringify(data) });
+      toast(published ? '文章已更新并发布！' : '草稿已保存！', 'ok');
     } else {
-      try {
-        var err = JSON.parse(xhr.responseText);
-        errorDiv.textContent = err.msg || err.message || 'Login failed (HTTP ' + xhr.status + ')';
-      } catch(e) {
-        errorDiv.textContent = 'Login failed (HTTP ' + xhr.status + ')';
-      }
-      errorDiv.style.background = '#fef2f2';
-      errorDiv.style.color = '#dc2626';
-      errorDiv.style.display = 'block';
+      data.created_at = new Date().toISOString();
+      await api('/rest/v1/articles', { method: 'POST', body: JSON.stringify(data) });
+      toast(published ? '文章已发布！' : '草稿已保存！', 'ok');
     }
+    closeEditor();
+    loadArticles();
+  } catch (e) { toast('保存失败: ' + e.message, 'er'); }
+}
+
+function confirmDelete(id) {
+  document.getElementById('deleteModal').style.display='flex';
+  document.getElementById('deleteMsg').textContent='确定删除文章 #'+id+'？此操作不可撤销。';
+  document.getElementById('confirmDeleteBtn').onclick=function(){deleteArticle(id)};
+}
+
+function closeModal() {
+  document.getElementById('deleteModal').style.display='none';
+}
+
+async function deleteArticle(id) {
+  closeModal();
+  try {
+    await api('/rest/v1/articles?id=eq.'+id,{method:'DELETE'});
+    toast('文章 #'+id+' 已删除','ok');
+    loadArticles();
+  } catch(e) {toast('删除失败: '+e.message,'er');}
+}
+
+// ================ CRAWLER (WebSocket + Control) ================
+
+// --- WebSocket connection ---
+var crawlWs = null;
+var crawlConnected = false;
+var CRAWLER_WS_URL = localStorage.getItem('crawler_ws_url') || 'ws://localhost:3456';
+var CRAWLER_API_URL = localStorage.getItem('crawler_api_url') || 'http://localhost:3456';
+var reconnectTimer = null;
+
+function getWsUrl() {
+  var saved = localStorage.getItem('crawler_ws_url');
+  return saved || 'ws://localhost:3456';
+}
+
+function getApiUrl() {
+  var saved = localStorage.getItem('crawler_api_url');
+  return saved || 'http://localhost:3456';
+}
+
+function updateServerAddr() {
+  var val = document.getElementById('crawlerServerAddr').value.trim();
+  if (!val) return;
+  if (!val.includes('://')) val = 'http://' + val;
+  var apiUrl = val;
+  var wsUrl = val.replace(/^http/, 'ws');
+  localStorage.setItem('crawler_ws_url', wsUrl);
+  localStorage.setItem('crawler_api_url', apiUrl);
+  crawlConnect();
+  toast('服务地址已更新', 'ok');
+}
+
+function setConnStatus(ok, msg) {
+  var badge = document.getElementById('connBadge');
+  if (ok) {
+    badge.className = 'conn-badge ok';
+    badge.textContent = '● 已连接';
+    badge.title = '';
+  } else {
+    badge.className = 'conn-badge er';
+    badge.textContent = '● ' + (msg || '未连接');
+    badge.title = '点击重连';
+  }
+  crawlConnected = ok;
+}
+
+function crawlConnect() {
+  // Close existing
+  if (crawlWs) {
+    try { crawlWs.close(); } catch(e) {}
+    crawlWs = null;
+  }
+  clearTimeout(reconnectTimer);
+
+  CRAWLER_WS_URL = getWsUrl();
+  CRAWLER_API_URL = getApiUrl();
+
+  try {
+    crawlWs = new WebSocket(CRAWLER_WS_URL);
+
+    crawlWs.onopen = function() {
+      setConnStatus(true, '已连接');
+    };
+
+    crawlWs.onmessage = function(event) {
+      try {
+        var msg = JSON.parse(event.data);
+        handleCrawlerMessage(msg);
+      } catch(e) {
+        // raw text line
+        appendLog(event.data, 'log');
+      }
+    };
+
+    crawlWs.onclose = function() {
+      setConnStatus(false, '未连接');
+      crawlWs = null;
+      // Auto-reconnect after 3s
+      reconnectTimer = setTimeout(crawlConnect, 3000);
+    };
+
+    crawlWs.onerror = function() {
+      // onclose will fire after this
+    };
+  } catch(e) {
+    setConnStatus(false, '连接失败');
+    // Retry
+    reconnectTimer = setTimeout(crawlConnect, 5000);
+  }
+}
+
+function handleCrawlerMessage(msg) {
+  switch (msg.type) {
+    case 'connected':
+    case 'status':
+      updateCrawlerUI(msg.data);
+      break;
+    case 'log':
+      appendLog(msg.data.text, msg.data.type);
+      break;
+  }
+}
+
+function updateCrawlerUI(data) {
+  if (!data) return;
+  var running = data.running;
+  var stats = data.stats || {};
+  var lastRun = data.lastRun;
+
+  // Status badge
+  var badge = document.getElementById('crawlerStatusBadge');
+  var dot = document.getElementById('crawlerStatusDot');
+  var textEl = document.getElementById('crawlerStatusText');
+  var phase = stats.currentPhase || 'idle';
+
+  var phaseNames = {
+    'starting': '启动中',
+    'scraping': '爬取中',
+    'processing': '处理中',
+    'uploading': '上传中',
+    'github': 'GitHub',
+    'done': '完成',
+    'error': '错误',
+    'completed': '已完成 ✓',
+    'failed': '失败 ✗',
   };
-  xhr.onerror = function() {
-    errorDiv.textContent = 'Network error - cannot reach server.';
-    errorDiv.style.background = '#fef2f2';
-    errorDiv.style.color = '#dc2626';
-    errorDiv.style.display = 'block';
-  };
-  xhr.send(JSON.stringify({ email: email, password: password }));
+
+  if (running) {
+    badge.className = 'status running';
+    dot.className = 'status-dot running';
+    textEl.textContent = '运行中 (' + (phaseNames[phase] || phase) + ')';
+    document.getElementById('btnStartCrawl').style.display = 'none';
+    document.getElementById('btnStopCrawl').style.display = '';
+  } else {
+    badge.className = 'status idle';
+    dot.className = 'status-dot idle';
+    textEl.textContent = '空闲';
+    document.getElementById('btnStartCrawl').style.display = '';
+    document.getElementById('btnStopCrawl').style.display = 'none';
+
+    if (phase === 'completed') {
+      badge.className = 'status done';
+      dot.className = 'status-dot done';
+      textEl.textContent = '已完成 ✓';
+    } else if (phase === 'failed' || phase === 'error') {
+      badge.className = 'status er';
+      dot.className = 'status-dot er';
+      textEl.textContent = '失败 ✗';
+    }
+  }
+
+  // Stats
+  document.getElementById('cl_processed').textContent = stats.processed || 0;
+  document.getElementById('cl_uploaded').textContent = stats.uploaded || 0;
+  document.getElementById('cl_skipped').textContent = stats.skipped || 0;
+  document.getElementById('cl_errors').textContent = stats.errors || 0;
+
+  // Progress bar
+  var pct = stats.progress || 0;
+  if (running) {
+    document.getElementById('crawlerProgressBar').style.width = Math.max(5, pct) + '%';
+  } else if (phase === 'completed') {
+    document.getElementById('crawlerProgressBar').style.width = '100%';
+  } else {
+    document.getElementById('crawlerProgressBar').style.width = '0%';
+  }
+
+  // Last run info from lastRun
+  if (lastRun && lastRun.finishedAt) {
+    var d = new Date(lastRun.finishedAt);
+    document.getElementById('cl_lastRun').textContent = d.toLocaleString('zh-CN');
+  }
+}
+
+function appendLog(text, type) {
+  if (!text) return;
+  var log = document.getElementById('crawlerLog');
+  var div = document.createElement('div');
+  div.className = 'log-line ' + (type || 'log');
+  // Escape HTML
+  div.textContent = text;
+  log.appendChild(div);
+  // Auto-scroll
+  log.scrollTop = log.scrollHeight;
+}
+
+// --- Crawler actions ---
+
+async function crawlStart() {
+  var limit = parseInt(document.getElementById('crawlLimit').value) || 20;
+  var concurrency = parseInt(document.getElementById('crawlConcurrency').value) || 10;
+  var source = document.getElementById('crawlSource').value || '';
+  var hotOnly = document.getElementById('crawlHotOnly').checked;
+  var dryRun = document.getElementById('crawlDryRun').checked;
+
+  // Clear log
+  document.getElementById('crawlerLog').innerHTML = '';
+
+  // Save config
+  localStorage.setItem('crawler_last_config', JSON.stringify({
+    limit: limit,
+    concurrency: concurrency,
+    source: source,
+    hotOnly: hotOnly,
+    dryRun: dryRun,
+  }));
+
+  appendLog('🚀 启动爬虫... (limit=' + limit + ', concurrency=' + concurrency + ', hotOnly=' + hotOnly + ', dryRun=' + dryRun + ')', 'info');
+  appendLog('连接至: ' + CRAWLER_API_URL + '/api/start-crawl', 'info');
+
+  try {
+    var res = await fetch(CRAWLER_API_URL + '/api/start-crawl', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        limit: limit,
+        concurrency: concurrency,
+        source: source || undefined,
+        hotTermsOnly: hotOnly,
+        dryRun: dryRun,
+      }),
+    });
+    var data = await res.json();
+    if (data.success) {
+      appendLog('✅ 爬虫已启动！', 'success');
+    } else {
+      appendLog('❌ ' + (data.message || '启动失败'), 'error');
+    }
+  } catch (e) {
+    appendLog('❌ 连接失败: ' + e.message, 'error');
+    appendLog('   请确保 crawler-server.js 已在端口 3456 运行', 'error');
+    appendLog('   → cd crawler && node crawler-server.js', 'info');
+  }
+}
+
+async function crawlStop() {
+  appendLog('⏹ 正在停止爬虫...', 'info');
+  try {
+    var res = await fetch(CRAWLER_API_URL + '/api/stop-crawl', { method: 'POST' });
+    var data = await res.json();
+    appendLog(data.message || '已请求停止', 'info');
+  } catch (e) {
+    appendLog('错误: ' + e.message, 'error');
+  }
+}
+
+// --- Hot terms loader ---
+
+async function loadHotTerms() {
+  var listEl = document.getElementById('hotTermsList');
+  var countEl = document.getElementById('hotCount');
+  var rawEl = document.getElementById('hotTermsRaw');
+  var fetchedEl = document.getElementById('hotLastFetched');
+
+  // Show static HOT_TERMS in raw config section always
+  rawEl.textContent = 'const HOT_TERMS = ' + JSON.stringify(HOT_TERMS, null, 2);
+
+  // Try Vercel API first (Google hot terms from the cloud), then local server
+  var apis = [
+    'https://toolrankly.com/api/hot-terms',
+    CRAWLER_API_URL + '/api/hot-terms',
+  ];
+
+  for (var apiUrl of apis) {
+    try {
+      var res = await fetch(apiUrl, { signal: AbortSignal.timeout(5000) });
+      if (res.ok) {
+        var data = await res.json();
+        var terms = data.live || [];
+
+        if (data.fetchedAt) {
+          var d = new Date(data.fetchedAt);
+          fetchedEl.textContent = '更新于 ' + d.toLocaleTimeString('zh-CN') + ' [' + apiUrl.replace(/^https?:\/\//, '') + ']';
+        }
+
+        countEl.textContent = terms.length;
+
+        var html = '';
+        terms.forEach(function(t) {
+          var source = t.sources || (t.source ? [t.source] : ['Unknown']);
+          var aiBadge = t.isAiRelated ? '<span style="font-size:9px;color:#2563eb;margin-left:4px">● AI</span>' : '';
+          html += '<div class="hot-term"><div><div class="name">' + t.term + aiBadge + '</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">' + source.join(', ') + '</div></div><span class="weight">' + t.weight + '</span></div>';
+        });
+        listEl.innerHTML = html || '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px">暂无实时热词数据</div>';
+
+        if (data.static) {
+          rawEl.textContent = '// Live API returned ' + terms.length + ' terms\n// Static config:\nconst HOT_TERMS = ' + JSON.stringify(data.static, null, 2);
+        }
+        return;
+      }
+    } catch(e) {
+      // Try next API
+    }
+  }
+
+  // Fallback: render static HOT_TERMS
+  fetchedEl.textContent = '离线模式（静态数据）';
+  countEl.textContent = HOT_TERMS.length;
+
+  var html = '';
+  HOT_TERMS.forEach(function(t) {
+    html += '<div class="hot-term"><div><div class="name">' + t.term + '</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">' + t.keyword + '</div></div><span class="weight">' + t.weight + '</span></div>';
+  });
+  listEl.innerHTML = html;
+}
+
+async function refreshHotTerms() {
+  document.getElementById('hotTermsList').innerHTML = '<div class="ls" style="padding:20px"><div class="sp"></div>刷新中...</div>';
+  await loadHotTerms();
+  toast('热词已刷新', 'ok');
+}
+
+// --- Loader ---
+
+async function loadCrawler() {
+  // Load hot terms — try live API first, fallback to static
+  await loadHotTerms();
+
+  // Load total from DB
+  try {
+    var all = await api('/rest/v1/articles?select=id');
+    document.getElementById('cl_total').textContent = all.length;
+  } catch (e) {}
+
+  // Set input defaults from localStorage
+  var savedUrl = localStorage.getItem('crawler_ws_url');
+  if (savedUrl) {
+    document.getElementById('crawlerServerAddr').value = savedUrl.replace(/^ws:\/\//, '');
+  }
+  // Load config from saved
+  var lastCfg = localStorage.getItem('crawler_last_config');
+  if (lastCfg) {
+    try {
+      var cfg = JSON.parse(lastCfg);
+      document.getElementById('crawlLimit').value = cfg.limit || 20;
+      document.getElementById('crawlConcurrency').value = cfg.concurrency || 10;
+      document.getElementById('crawlSource').value = cfg.source || '';
+      document.getElementById('crawlHotOnly').checked = !!cfg.hotOnly;
+      document.getElementById('crawlDryRun').checked = !!cfg.dryRun;
+    } catch(e) {}
+  }
+
+  // Connect WebSocket
+  crawlConnect();
+}
+
+function refreshCrawler() {
+  loadCrawler();
+  toast('已刷新', 'ok');
 }
 </script>
-<script defer src="/js/supabase-client.js"></script>
-<script defer src="/js/admin.js"></script>
 </body>
 </html>
