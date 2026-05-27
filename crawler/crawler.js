@@ -645,17 +645,34 @@ function cleanContent($) {
   // Strip interactive/UI elements
   html = html.replace(/<button[^>]*>[\s\S]*?<\/button>/gi, '');
   html = html.replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '');
-  // Strip inline event handlers
+  // Strip <picture> — keep only the <img> fallback
+  html = html.replace(/<picture[^>]*>([\s\S]*?)<\/picture>/gi, function(m, inner) {
+    var img = inner.match(/<img[^>]*>/i);
+    return img ? img[0] : '';
+  });
+  // Strip <figure> — keep inner content
+  html = html.replace(/<figure[^>]*>([\s\S]*?)<\/figure>/gi, '$1');
+  // Strip extra sections that aren't article content
+  html = html.replace(/<section[^>]*>[\s\S]*?<\/section>/gi, '');
+  html = html.replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, '');
+  // Strip "keep reading" / related articles sections
+  html = html.replace(/<div[^>]*>[\s\S]*?\b(keep reading|related\s+(articles|posts)|view\s+all)\b[\s\S]*?<\/div>/gi, '');
+  // Strip ALL inline style attributes (prevents layout breakage)
+  html = html.replace(/\sstyle="[^"]*"/gi, '');
+  // Strip id attributes (prevents duplicate IDs with page)
+  html = html.replace(/\sid="[^"]*"/gi, '');
+  html = html.replace(/\sclass="[^"]*"/gi, '');
+  // Strip event handlers
   html = html.replace(/\s(on\w+)="[^"]*"/gi, '');
-  // Strip ARIA attributes
+  // Strip ARIA/data attributes
   html = html.replace(/\s(aria-\w+)="[^"]*"/gi, '');
   html = html.replace(/\srole="[^"]*"/gi, '');
-  // Strip Tailwind/utility classes (meaningless without the framework CSS)
-  html = html.replace(/\sclass="[^"]*"/gi, '');
-  // Strip empty <picture> wrappers after source removal
+  html = html.replace(/\sdata-\w+(?:-\w+)*="[^"]*"/gi, '');
+  // Strip empty elements left behind
   html = html.replace(/<picture[^>]*>\s*<\/picture>/gi, '');
-  // Remove empty paragraphs created by stripping
   html = html.replace(/<p[^>]*>\s*<\/p>/gi, '');
+  html = html.replace(/<div[^>]*>\s*<\/div>/gi, '');
+  html = html.replace(/<span[^>]*>\s*<\/span>/gi, '');
 
   // Limit content length (prevent absurdly long articles)
   if (html.length > 50000) {
