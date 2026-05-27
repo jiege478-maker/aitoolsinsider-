@@ -81,7 +81,7 @@ async function fetchCategories() {
 
 // ---- Articles ----
 async function fetchPublishedArticles(categorySlug) {
-  let url = '/rest/v1/articles?select=*,categories(name,slug)&eq(published,true)&order=created_at.desc';
+  let url = '/rest/v1/articles?select=*,categories(name,slug)&published=eq.true&order=created_at.desc';
   if (categorySlug) {
     // Map slug to category_id (Supabase REST API can't filter parent by nested column)
     const slugToId = { writing: 1, image: 2, coding: 3, video: 4, productivity: 5 };
@@ -93,19 +93,19 @@ async function fetchPublishedArticles(categorySlug) {
 }
 
 async function fetchArticleBySlug(slug) {
-  const res = await sbFetch('/rest/v1/articles?select=*,categories(name,slug)&eq(published,true)&slug=eq.' + encodeURIComponent(slug) + '&limit=1');
+  const res = await sbFetch('/rest/v1/articles?select=*,categories(name,slug)&published=eq.true&slug=eq.' + encodeURIComponent(slug) + '&limit=1');
   const data = await res.json();
   return data.length > 0 ? data[0] : null;
 }
 
 async function fetchRelatedArticles(categoryId, excludeSlug, limit) {
-  const url = '/rest/v1/articles?select=*,categories(name,slug)&eq(category_id,' + categoryId + ')&eq(published,true)&slug=neq.' + encodeURIComponent(excludeSlug) + '&limit=' + (limit || 4);
+  const url = '/rest/v1/articles?select=*,categories(name,slug)&category_id=eq.' + categoryId + '&published=eq.true&slug=neq.' + encodeURIComponent(excludeSlug) + '&limit=' + (limit || 4);
   const res = await sbFetch(url);
   return res.json();
 }
 
 async function fetchFeaturedArticles() {
-  const res = await sbFetch('/rest/v1/articles?select=*,categories(name,slug)&eq(featured,true)&eq(published,true)&order=created_at.desc&limit=6');
+  const res = await sbFetch('/rest/v1/articles?select=*,categories(name,slug)&featured=eq.true&published=eq.true&order=created_at.desc&limit=6');
   return res.json();
 }
 

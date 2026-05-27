@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
 
   try {
     // Fetch article from Supabase
-    const url = `${SUPABASE_URL}/rest/v1/articles?select=*,categories(name,slug)&slug=eq.${encodeURIComponent(slug)}&eq(published,true)&limit=1`;
+    const url = `${SUPABASE_URL}/rest/v1/articles?select=*,categories(name,slug)&slug=eq.${encodeURIComponent(slug)}&published=eq.true&limit=1`;
     const response = await fetch(url, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
