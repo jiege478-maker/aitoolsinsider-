@@ -181,6 +181,18 @@ function isAlreadyCrawled(url, crawled) {
   return crawled.some(c => c.url === url);
 }
 
+// Skip known non-article pages (course listings, category pages, etc.)
+function isArticleUrl(url) {
+  const path = new URL(url).pathname;
+  // Academy course listing pages
+  if (/\/academy\//i.test(path)) return false;
+  // Category / tag / archive pages
+  if (/^\/(category|tag|archive|author)\//i.test(path)) return false;
+  // Sign-up, form, legal pages
+  if (/\/signup\b|\/login\b|\/legal\b|\/privacy\b|\/terms\b/i.test(path)) return false;
+  return true;
+}
+
 // ============================================================
 // SEO FUNCTIONS
 // ============================================================
@@ -386,21 +398,36 @@ function isQualityContent(title, html) {
   const text = html.replace(/<[^>]+>/g, '').trim();
   const words = text.split(/\s+/);
 
-  // Must have at least 100 words of real content
+  // Must have at least 100 words of raw text
   if (words.length < 100) {
     return false;
   }
 
-  // Count article-like elements
-  const hasParagraphs = /<p>/i.test(html);
+  // Check for substantial paragraph text (skip metadata-only <p> tags)
+  const pTags = html.match(/<p[^>]*>[\s\S]*?<\/p>/gi) || [];
+  let substantialText = '';
+  for (const p of pTags) {
+    const inner = p.replace(/<[^>]+>/g, '').trim();
+    if (inner.length < 30) continue;
+    if (/^\d{4}/.test(inner)) continue; // date-only paragraph
+    substantialText += ' ' + inner;
+  }
+  const substantialWords = substantialText.trim().split(/\s+/).filter(Boolean);
+
+  // Must have at least 40 words of real paragraph content
+  // (filters out listing pages with only image cards/metadata)
+  if (substantialWords.length < 40) {
+    return false;
+  }
+
   const hasHeadings = /<h[1-6]/i.test(html);
   const noiseRatio = (html.match(/comment|discuss|reply|join/i) || []).length / Math.max(1, words.length);
 
   // Too much discussion/commentary = low quality
   if (noiseRatio > 0.05) return false;
 
-  // Must have some structural elements (paragraphs or headings)
-  return hasParagraphs || hasHeadings;
+  // Must have headings or at least 100 substantial words
+  return hasHeadings || substantialWords.length >= 100;
 }
 
 // ============================================================
@@ -1312,6 +1339,11 @@ async function main() {
 
       // Dedup check
       if (isAlreadyCrawled(url, crawled)) {
+        continue;
+      }
+
+      // Skip non-article pages (academy, category, etc.)
+      if (!isArticleUrl(url)) {
         continue;
       }
 
