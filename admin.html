@@ -251,6 +251,13 @@ tr:hover td{background:#f8fafc}
     <div><button class="btn btn-p btn-sm" onclick="openEditor()">+ 新建文章</button></div>
   </div>
 
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:4px;margin:8px 0">
+    <button class="btn btn-s btn-xs" id="filter-all" style="font-weight:600" onclick="setArticleFilter('all')">全部</button>
+    <button class="btn btn-s btn-xs" id="filter-draft" onclick="setArticleFilter('draft')">草稿</button>
+    <button class="btn btn-s btn-xs" id="filter-published" onclick="setArticleFilter('published')">已发布</button>
+  </div>
+
   <!-- Editor Form -->
   <div class="editor-form" id="editorForm" style="display:none">
     <h2 id="editorTitle">新建文章</h2>
@@ -574,11 +581,16 @@ function renderDashboard(articles,pubCount){
 // ================ ARTICLES CRUD ================
 var currentEditId = null;
 var _previewArticleId = null;
+var articleFilter = 'all';
 
 async function loadArticles() {
   document.getElementById('artLoading').style.display='';document.getElementById('artLoading').innerHTML='<div class="sp"></div>加载中...';
   document.getElementById('artTable').style.display='none';
   document.getElementById('artError').style.display='none';
+  // Init filter button styles
+  document.getElementById('filter-all').style.fontWeight = articleFilter === 'all' ? '600' : 'normal';
+  document.getElementById('filter-draft').style.fontWeight = articleFilter === 'draft' ? '600' : 'normal';
+  document.getElementById('filter-published').style.fontWeight = articleFilter === 'published' ? '600' : 'normal';
   try {
     var articles = await api('/rest/v1/articles?select=*,categories(id,name)&order=created_at.desc');
     renderArticles(articles);
@@ -589,8 +601,26 @@ async function loadArticles() {
   }
 }
 
+function setArticleFilter(filter) {
+  articleFilter = filter;
+  document.getElementById('filter-all').style.fontWeight = filter === 'all' ? '600' : 'normal';
+  document.getElementById('filter-draft').style.fontWeight = filter === 'draft' ? '600' : 'normal';
+  document.getElementById('filter-published').style.fontWeight = filter === 'published' ? '600' : 'normal';
+  loadArticles();
+}
+
 function renderArticles(articles) {
-  document.getElementById('articleSub').textContent='共 '+articles.length+' 篇文章';
+  var draftCount = articles.filter(function(a){return !a.published}).length;
+  var pubCount = articles.filter(function(a){return a.published}).length;
+  document.getElementById('articleSub').textContent='共 '+articles.length+' 篇（草稿 '+draftCount+' · 已发布 '+pubCount+'）';
+
+  // Apply filter
+  if (articleFilter === 'draft') {
+    articles = articles.filter(function(a){return !a.published});
+  } else if (articleFilter === 'published') {
+    articles = articles.filter(function(a){return a.published});
+  }
+
   document.getElementById('articleCount').textContent=articles.length+' 篇';
   document.getElementById('artLoading').style.display='none';
   document.getElementById('artTable').style.display='';
