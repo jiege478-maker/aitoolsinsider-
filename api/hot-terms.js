@@ -103,7 +103,7 @@ module.exports = async (req, res) => {
       const weight = t.source === 'Google Trends' ? 25
                    : t.source === 'Google Suggest' ? 20
                    : 12;
-      return { ...t, isAiRelated: ai, weight };
+      return { ...t, sources: [t.source], isAiRelated: ai, weight };
     });
 
     // 排序：AI 相关优先 > 权重 > 来源
