@@ -386,8 +386,8 @@ function isQualityContent(title, html) {
   const text = html.replace(/<[^>]+>/g, '').trim();
   const words = text.split(/\s+/);
 
-  // Must have at least 60 words of real content
-  if (words.length < 60) {
+  // Must have at least 100 words of real content
+  if (words.length < 100) {
     return false;
   }
 
@@ -602,15 +602,16 @@ function cleanContent($) {
   $('button:contains("Upvote"), button:contains("Follow"), button:contains("upvote"), button:contains("follow")').remove();
   $('a:contains("Follow"), a:contains("Subscribe")').remove();
 
-  // Try common article selectors
+  // Try common article selectors (first match with enough text wins)
+  const minTextLen = 200;
   let article = $('article').first();
-  if (article.length === 0) article = $('[itemprop="articleBody"]');
-  if (article.length === 0) article = $('.post-content');
-  if (article.length === 0) article = $('.entry-content');
-  if (article.length === 0) article = $('.article-content');
-  if (article.length === 0) article = $('.content');
-  if (article.length === 0) article = $('main');
-  if (article.length === 0) article = $('body');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('[itemprop="articleBody"]');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('.post-content');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('.entry-content');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('.article-content');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('.content');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('main');
+  if (article.length === 0 || article.text().trim().length < minTextLen) article = $('body');
 
   // Clean remaining noise within the selected content
   article.find('script, style, iframe[src*="ads"], .ads, .ad, .social-share, .share').remove();
