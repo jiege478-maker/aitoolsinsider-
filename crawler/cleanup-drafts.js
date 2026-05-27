@@ -49,8 +49,25 @@ function cleanContent(html) {
 
   let cleaned = html;
 
-  // 1. Remove entire sections that look like author cards/bios
-  // Match div/section with author/avatar/profile classes containing images
+  // 1. Remove author/profile metadata blocks (HuggingFace blog style)
+  // Pattern: "Published on ... · Update on GitHub · Upvote ..." or similar
+  cleaned = cleaned.replace(/<p>[^<]*(Published|Updated|Upvote|downvote|vote)[^<]*<\/p>\s*(?:<p>[^<]*<\/p>\s*)*/gi, '');
+
+  // Remove "Update on GitHub" links
+  cleaned = cleaned.replace(/<a[^>]*href="[^"]*github\.com[^"]*"[^>]*>[\s\S]{0,200}?<\/a>/gi, '');
+
+  // Remove "Upvote X" / "+X" / "X votes" text blocks
+  cleaned = cleaned.replace(/(Upvote\s*\d+|[-+]\s*\d+|[\d,]+\s+(upvotes?|votes?|reactions?|likes?|stars?|hearts?))/gi, '');
+
+  // 2. Remove author list sections (multiple authors with profile links)
+  // Match patterns like: "AuthorName · username · AuthorName2 · username2"
+  cleaned = cleaned.replace(/[\s\S]{0,50}?(author|by|written by|posted by)[\s\S]{0,500}?(github\.com|twitter\.com|x\.com|linkedin\.com)[\s\S]{0,200}?(author|by|written|posted|share|tweet|follow)/gi, '');
+
+  // Remove author list: divs containing github.com links with usernames
+  // HuggingFace style: each author has a link with their GitHub handle
+  cleaned = cleaned.replace(/(?:<[^>]+>\s*)*(?:@\w+|github\.com\/\w+|twitter\.com\/\w+)(?:\s*<[^>]+>)*/gi, '');
+
+  // 3. Remove entire sections that look like author cards/bios
   const sectionPatterns = [
     // Author cards with avatar + name + bio
     /<div[^>]*class="[^"]*\b(author-card|author-bio|author-info|byline|profile-card|user-card)\b[^"]*"[^>]*>[\s\S]{0,2000}?<\/div>/gi,
@@ -64,24 +81,26 @@ function cleanContent(html) {
     /<div[^>]*class="[^"]*\b(vote|upvote|voting|reactions)\b[^"]*"[^>]*>[\s\S]{0,500}?<\/div>/gi,
     // Bookmark/save buttons
     /<div[^>]*class="[^"]*\b(bookmark|save-article|save-post)\b[^"]*"[^>]*>[\s\S]{0,500}?<\/div>/gi,
+    // Article metadata (date, reading time, author byline)
+    /<div[^>]*class="[^"]*\b(article-meta|post-meta|byline|meta-data|published|post-date|author-list)\b[^"]*"[^>]*>[\s\S]{0,1500}?<\/div>/gi,
   ];
 
   for (const pattern of sectionPatterns) {
     cleaned = cleaned.replace(pattern, '');
   }
 
-  // 2. Remove avatar/profile images by various attributes
+  // 4. Remove avatar/profile images by various attributes
   const imgPatterns = [
     // img with avatar/author/photo in class
-    /<img[^>]*class="[^"]*\b(avatar|author|profile|photo)\b[^"]*"[^>]*>/gi,
+    /<img[^>]*class="[^"]*\b(avatar|author|profile|photo|thumbnail|headshot)\b[^"]*"[^>]*>/gi,
     // img with avatar/author/photo in alt
-    /<img[^>]*alt="[^"]*\b(avatar|author photo|profile photo|profile pic)\b[^"]*"[^>]*>/gi,
+    /<img[^>]*alt="[^"]*\b(avatar|author photo|profile photo|profile pic|headshot)\b[^"]*"[^>]*>/gi,
     // img with gravatar URL
     /<img[^>]*src="[^"]*gravatar\.com[^"]*"[^>]*>/gi,
     // img with avatar in src
     /<img[^>]*src="[^"]*\/avatar[^"]*"[^>]*>/gi,
-    // img that are very small (typically avatars)
-    /<img[^>]*(width|height)="[0-9]{1,2}"[^>]*(width|height)="[0-9]{1,2}"[^>]*>/gi,
+    // img that are very small (typically avatars) - width OR height <= 40
+    /<img[^>]*(?:width|height)="[0-9]{1,2}"[^>]*(?:width|height)="[0-9]{1,2}"[^>]*>/gi,
     // img with data: URI (tiny icons)
     /<img[^>]*src="data:image\/[^"]{0,100}"[^>]*>/gi,
   ];
@@ -90,15 +109,27 @@ function cleanContent(html) {
     cleaned = cleaned.replace(pattern, '');
   }
 
-  // 3. Remove empty <a> tags that remain after removing images (avatar links)
+  // 5. Remove empty tags that remain after removing content
   cleaned = cleaned.replace(/<a[^>]*>\s*<\/a>/gi, '');
+  cleaned = cleaned.replace(/<span[^>]*>\s*<\/span>/gi, '');
+  cleaned = cleaned.replace(/<div[^>]*>\s*<\/div>/gi, '');
 
-  // 4. Remove common UI junk
-  cleaned = cleaned.replace(/<button[^>]*class="[^"]*\b(follow|upvote|share|bookmark|subscribe|clap)\b[^"]*"[^>]*>[\s\S]{0,200}?<\/button>/gi, '');
+  // 6. Remove common UI junk
+  cleaned = cleaned.replace(/<button[^>]*class="[^"]*\b(follow|upvote|share|bookmark|subscribe|clap|reaction)\b[^"]*"[^>]*>[\s\S]{0,200}?<\/button>/gi, '');
   cleaned = cleaned.replace(/<footer[^>]*>[\s\S]{0,2000}?<\/footer>/gi, '');
   cleaned = cleaned.replace(/<aside[^>]*>[\s\S]{0,2000}?<\/aside>/gi, '');
 
-  // 5. Clean up excessive whitespace
+  // 7. Remove "Published on" / "Updated on" / "Upvote" standalone text with GitHub links
+  // HuggingFace specific: "Published Sep 11, 2025 · Update on GitHub · Upvote 188"
+  cleaned = cleaned.replace(/Published\s+\w+\s+\d+[ ,]+\d{4}[\s\S]{0,100}?(?:Update on GitHub|Upvote|github\.com)/gi, '');
+  // Remove "+NN" upvote counts at start of paragraphs
+  cleaned = cleaned.replace(/^[+-]\d+\s*/gm, '');
+  // Remove lines containing only usernames with @ symbol
+  cleaned = cleaned.replace(/^@\w+[\s,]*$/gm, '');
+  // Remove "·" separator dots with surrounding whitespace
+  cleaned = cleaned.replace(/\s*·\s*/g, ' ');
+
+  // 8. Clean up excessive whitespace
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
   cleaned = cleaned.replace(/<br\s*\/?>\s*<br\s*\/?>\s*<br\s*\/?>/gi, '<br><br>');
 

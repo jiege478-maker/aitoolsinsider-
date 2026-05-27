@@ -93,7 +93,7 @@ async function fetchPublishedArticles(categorySlug) {
 }
 
 async function fetchArticleBySlug(slug) {
-  const res = await sbFetch('/rest/v1/articles?select=*,categories(name,slug)&slug=eq.' + encodeURIComponent(slug) + '&limit=1');
+  const res = await sbFetch('/rest/v1/articles?select=*,categories(name,slug)&eq(published,true)&slug=eq.' + encodeURIComponent(slug) + '&limit=1');
   const data = await res.json();
   return data.length > 0 ? data[0] : null;
 }
