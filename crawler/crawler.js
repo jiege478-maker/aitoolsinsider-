@@ -455,7 +455,7 @@ function isSpam(title, content) {
     /api\.nsstab\.com/i,
   ];
   // Also skip if no AI-related keywords in title or first 500 chars
-  const aiKeywords = /ai|artificial.intelligence|machine.learning|deep.learning|llm|gpt|chatgpt|neural|model|automation|data.?science|prompt|agent|bot|nlp|computer.vision|tensorflow|pytorch|algorithm|train|stable.diffusion|midjourney|dalle/i;
+  const aiKeywords = /ai|artificial.intelligence|machine.learning|deep.learning|llm|gpt|chatgpt|claude|anthropic|openai|gemini|mistral|cohere|llama|neural|model|automation|data.?science|prompt|agent|bot|nlp|computer.vision|tensorflow|pytorch|algorithm|train|stable.diffusion|midjourney|dalle|transformer|embedding|vector|rag|langchain|huggingface|paperspace/i;
   if (!aiKeywords.test(text.substring(0, 500))) {
     return true; // Not clearly AI-related
   }
