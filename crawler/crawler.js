@@ -807,12 +807,29 @@ async function processImages(html, baseUrl) {
 // FEED PARSING
 // ============================================================
 
+// Proxy for RSS feeds (auto-detect from env or Windows system proxy)
+let PROXY_URL = process.env.HTTP_PROXY || process.env.HTTPS_PROXY || null;
+if (!PROXY_URL && process.platform === 'win32') {
+  try {
+    const { execSync } = require('child_process');
+    const psOut = execSync('powershell -Command "Get-ItemProperty -Path \'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\' | Select-Object -ExpandProperty ProxyServer"', { encoding: 'utf8', timeout: 3000 }).trim();
+    if (psOut) PROXY_URL = 'http://' + psOut;
+  } catch(e) { /* no windows proxy detected */ }
+}
+let rssAgent = undefined;
+if (PROXY_URL) {
+  const { HttpsProxyAgent } = require('https-proxy-agent');
+  rssAgent = new HttpsProxyAgent(PROXY_URL);
+  console.log(`  [Proxy] RSS feeds via ${PROXY_URL}`);
+}
+
 const rssParser = new RssParser({
   timeout: 15000,
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml',
   },
+  requestOptions: rssAgent ? { agent: rssAgent } : {},
 });
 
 async function fetchFeed(feedConfig) {

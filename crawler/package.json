@@ -10,6 +10,7 @@
   "dependencies": {
     "cheerio": "^1.0.0",
     "express": "^5.2.1",
+    "https-proxy-agent": "^9.0.0",
     "marked": "^18.0.4",
     "rss-parser": "^3.13.0",
     "ws": "^8.21.0"
