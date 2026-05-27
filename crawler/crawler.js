@@ -1393,7 +1393,7 @@ async function main() {
   for (const queued of articleQueue) {
     if (uploaded >= MAX_ARTICLES) break;
 
-    const { item, scraped, contentHtml, feedConfig, hotScore, url, title, pubDate } = queued;
+    const { item, scraped, contentHtml, feedConfig, hotScore, url, title, pubDate, tutorialBoost } = queued;
 
     // Extract focus keyword for SEO
     const focusKeyword = extractFocusKeyword(title, contentHtml, hotScore);
