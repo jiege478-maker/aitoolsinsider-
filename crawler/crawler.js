@@ -57,16 +57,30 @@ const DEDUP_FILE = path.join(__dirname, 'crawled-urls.json');
 // ============================================================
 
 const FEEDS = [
-  // ===== AI Companies (some may be blocked but no harm trying) =====
+  // ===== AI Companies =====
   { url: 'https://openai.com/blog/feed.xml', name: 'openai' },
+  { url: 'https://www.anthropic.com/feed.xml', name: 'anthropic' },
   { url: 'https://ai.googleblog.com/feeds/posts/default', name: 'google-ai' },
-  // ===== Tech News (working from China) =====
+  { url: 'https://huggingface.co/blog/feed.xml', name: 'huggingface' },
+  { url: 'https://ai.meta.com/blog/feed.xml', name: 'meta-ai' },
+  { url: 'https://stability.ai/blog/feed.xml', name: 'stability' },
+  { url: 'https://mistral.ai/feed.xml', name: 'mistral' },
+  { url: 'https://cohere.com/blog/feed.xml', name: 'cohere' },
+  { url: 'https://blog.langchain.dev/feed.xml', name: 'langchain' },
+  // ===== Tech News =====
   { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', name: 'tc-ai' },
+  { url: 'https://www.theverge.com/ai-artificial-intelligence/rss.xml', name: 'verge-ai' },
   { url: 'https://venturebeat.com/category/ai/feed/', name: 'vb-ai' },
   { url: 'https://www.artificialintelligence-news.com/feed/', name: 'ai-news' },
   { url: 'https://www.marktechpost.com/feed/', name: 'mtp' },
   { url: 'https://www.analyticsvidhya.com/blog/feed/', name: 'av' },
-  // ===== Developer Community (Dev.to - works great from China) =====
+  { url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed/', name: 'mit-tr-ai' },
+  { url: 'https://www.wired.com/feed/tag/ai/latest/rss', name: 'wired-ai' },
+  { url: 'https://www.newscientist.com/subject/technology/feed/', name: 'newsci-ai' },
+  { url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml', name: 'zdnet-ai' },
+  { url: 'https://analyticsindiamag.com/feed/', name: 'aim' },
+  { url: 'https://www.unite.ai/feed/', name: 'unite-ai' },
+  // ===== Developer Community =====
   { url: 'https://dev.to/feed/tag/ai', name: 'devto-ai' },
   { url: 'https://dev.to/feed/tag/machinelearning', name: 'devto-ml' },
   { url: 'https://dev.to/feed/tag/generativeai', name: 'devto-genai' },
@@ -78,27 +92,28 @@ const FEEDS = [
   { url: 'https://dev.to/feed/tag/tutorial', name: 'devto-tutorial' },
   { url: 'https://dev.to/feed/tag/writing', name: 'devto-writing' },
   { url: 'https://dev.to/feed/tag/video', name: 'devto-video' },
-  // ===== AI Tools & Product =====
-  { url: 'https://www.producthunt.com/feed?category=artificial-intelligence', name: 'ph-ai' },
-  // ===== Academic & Research (accessible from China) =====
+  { url: 'https://dev.to/feed/tag/contentcreation', name: 'devto-content' },
+  { url: 'https://medium.com/feed/tag/artificial-intelligence', name: 'medium-ai' },
+  { url: 'https://medium.com/feed/tag/generative-ai', name: 'medium-genai' },
+  { url: 'https://medium.com/feed/tag/llm', name: 'medium-llm' },
+  { url: 'https://medium.com/feed/tag/ai-agents', name: 'medium-agents' },
+  { url: 'https://medium.com/feed/tag/prompt-engineering', name: 'medium-pe' },
+  { url: 'https://medium.com/feed/tag/ai-writing', name: 'medium-writing' },
+  { url: 'https://medium.com/feed/tag/ai-video', name: 'medium-video' },
+  // ===== Academic & Research =====
   { url: 'https://export.arxiv.org/rss/cs.AI', name: 'arxiv-ai' },
   { url: 'https://export.arxiv.org/rss/cs.LG', name: 'arxiv-ml' },
   { url: 'https://export.arxiv.org/rss/cs.CL', name: 'arxiv-nlp' },
   { url: 'https://export.arxiv.org/rss/cs.CV', name: 'arxiv-cv' },
   { url: 'https://paperswithcode.com/research.rss', name: 'pwc' },
-  // ===== AI News Sites (accessible from China) =====
-  { url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed/', name: 'mit-tr-ai' },
-  { url: 'https://www.wired.com/feed/tag/ai/latest/rss', name: 'wired-ai' },
-  { url: 'https://www.newscientist.com/subject/technology/feed/', name: 'newsci-ai' },
-  { url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml', name: 'zdnet-ai' },
-  { url: 'https://analyticsindiamag.com/feed/', name: 'aim' },
-  { url: 'https://www.unite.ai/feed/', name: 'unite-ai' },
-  // ===== AI Developer Blogs =====
+  // ===== Community & Discussion =====
+  { url: 'https://www.reddit.com/r/artificial/.rss', name: 'reddit-ai' },
+  { url: 'https://www.reddit.com/r/MachineLearning/.rss', name: 'reddit-ml' },
+  { url: 'https://news.ycombinator.com/rss', name: 'hn' },
+  // ===== AI Tools & Product =====
+  { url: 'https://www.producthunt.com/feed?category=artificial-intelligence', name: 'ph-ai' },
   { url: 'https://neptune.ai/blog/feed', name: 'neptune' },
   { url: 'https://www.comet.com/blog/feed/', name: 'comet' },
-  { url: 'https://www.maartengrootendorst.com/blog/feed.xml', name: 'maarten' },
-  // ===== Writing, Video, Content =====
-  { url: 'https://dev.to/feed/tag/contentcreation', name: 'devto-content' },
 ];
 
 // GitHub repos: search for AI tutorial repos
