@@ -499,7 +499,9 @@ async function api(path, opts) {
   if(opts&&opts.headers) Object.assign(headers,opts.headers);
   var res=await fetch(SUPABASE_URL+path,{method:(opts&&opts.method)||'GET',headers,body:opts&&opts.body});
   if(!res.ok){var t;try{t=await res.text()}catch(e){t=res.status} throw new Error(t||res.status)}
-  return res.json();
+  var ct=res.headers.get('content-type');
+  if(ct&&ct.includes('json')) return res.json();
+  return null;
 }
 
 // ===== TAB SWITCHING =====
