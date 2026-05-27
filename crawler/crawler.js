@@ -159,7 +159,7 @@ const HOT_TERMS = [
 const HOT_TERMS_ONLY = process.env.HOT_TERMS_ONLY === 'true';
 
 // Concurrency: number of pages to scrape simultaneously
-const CONCURRENCY = parseInt(process.env.CONCURRENCY || '10', 10);
+const CONCURRENCY = parseInt(process.env.CONCURRENCY || '3', 10);
 
 // ============================================================
 // DEDUP
@@ -386,8 +386,10 @@ function isQualityContent(title, html) {
   const text = html.replace(/<[^>]+>/g, '').trim();
   const words = text.split(/\s+/);
 
-  // Must have at least 100 words
-  if (words.length < 100) return false;
+  // Must have at least 60 words of real content
+  if (words.length < 60) {
+    return false;
+  }
 
   // Count article-like elements
   const hasParagraphs = /<p>/i.test(html);
@@ -397,6 +399,7 @@ function isQualityContent(title, html) {
   // Too much discussion/commentary = low quality
   if (noiseRatio > 0.05) return false;
 
+  // Must have some structural elements (paragraphs or headings)
   return hasParagraphs || hasHeadings;
 }
 
@@ -949,22 +952,35 @@ async function fetchFeed(feedConfig) {
 
 async function scrapeContent(url) {
   const launchOpts = { headless: true };
-  if (PROXY_URL) {
-    const proxyHost = PROXY_URL.replace(/^https?:\/\//, '');
+  // Only use proxy for Playwright if explicitly set via env var
+  const pwProxy = process.env.PW_PROXY || '';
+  if (pwProxy) {
+    const proxyHost = pwProxy.replace(/^https?:\/\//, '');
     launchOpts.args = [`--proxy-server=${proxyHost}`];
-    console.log(`    [Playwright] proxy via ${proxyHost}`);
+  } else if (PROXY_URL) {
+    // Log that we're NOT using the RSS proxy for scraping
+    console.log(`    [Playwright] direct connection (no proxy)`);
   }
   const browser = await chromium.launch(launchOpts);
+  const ctx = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+  });
   let result = { content: '', description: '', title: '' };
 
   try {
-    const page = await browser.newPage();
-    await page.setDefaultTimeout(20000);
+    const page = await ctx.newPage();
+    await page.setDefaultTimeout(30000);
 
-    // Block images and fonts for faster loading
-    await page.route('**/*.{png,jpg,jpeg,gif,svg,woff,woff2,ttf,eot,css}', route => route.abort());
+    // Block only heavy media (allow CSS for JS-rendered sites)
+    await page.route(/\.(png|jpg|jpeg|gif|svg|woff2?|ttf|eot)(\?.*)?$/i, route => route.abort());
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    // Navigate: try domcontentloaded first (faster), wait for content to settle
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+    // Give JS-rendered content time to appear
+    await page.waitForTimeout(3000);
+    // Scroll to trigger lazy content
+    await page.evaluate(() => window.scrollTo(0, 500)).catch(() => {});
+    await page.waitForTimeout(2000);
 
     // Get page content
     const html = await page.content();
@@ -1002,6 +1018,7 @@ async function scrapeContent(url) {
     console.log(`    Scrape error: ${e.message}`);
     result.content = '';
   } finally {
+    await ctx.close();
     await browser.close();
   }
 
