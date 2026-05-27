@@ -411,18 +411,28 @@ async function fetchZhihu() {
 let liveHotTermsCache = { terms: [], fetchedAt: null };
 
 async function fetchLiveHotTerms() {
-  // Cache for 5 minutes
-  if (liveHotTermsCache.fetchedAt && Date.now() - liveHotTermsCache.fetchedAt < 5 * 60 * 1000) {
+  // Cache for 3 minutes
+  if (liveHotTermsCache.fetchedAt && Date.now() - liveHotTermsCache.fetchedAt < 3 * 60 * 1000) {
     return liveHotTermsCache.terms;
   }
 
-  const sources = [
-    fetchGithubTrending(),
-    fetchHuggingFacePapers(),
-    fetchBaiduSuggestions(),
-    fetch36Kr(),
-  ];
+  // Primary: proxy Vercel API (Google hot terms from cloud)
+  try {
+    const res = await fetch('https://www.toolrankly.com/api/hot-terms', { signal: AbortSignal.timeout(8000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.live && data.live.length > 0) {
+        liveHotTermsCache = { terms: data.live, fetchedAt: Date.now() };
+        console.log(`  [HotTerms] Fetched ${data.live.length} Google terms (${data.live.filter(t => t.isAiRelated).length} AI-related)`);
+        return data.live;
+      }
+    }
+  } catch (e) {
+    console.log(`  [HotTerms] Vercel API error: ${e.message}`);
+  }
 
+  // Fallback: local sources
+  const sources = [ fetchGithubTrending() ];
   const results = await Promise.allSettled(sources);
   const allSourceResults = [];
   for (const r of results) {
@@ -430,12 +440,8 @@ async function fetchLiveHotTerms() {
       allSourceResults.push(...r.value);
     }
   }
-
-  // Merge all results into a map keyed by normalized term
   const termMap = new Map();
-
   const addTerm = (term, source, weight) => {
-    // Normalize: lowercase, remove special chars for dedup
     const key = term.toLowerCase().replace(/[^a-z0-9一-鿿]/g, '');
     if (!key || key.length < 2) return;
     if (termMap.has(key)) {
@@ -443,43 +449,16 @@ async function fetchLiveHotTerms() {
       existing.weight += weight;
       if (!existing.sources.includes(source)) existing.sources.push(source);
     } else {
-      termMap.set(key, {
-        term,
-        weight,
-        sources: [source],
-        isAiRelated: isAiRelated(term),
-      });
+      termMap.set(key, { term, weight, sources: [source], isAiRelated: isAiRelated(term) });
     }
   };
-
-  // Load static HOT_TERMS as base weights
-  try {
-    const crawlerSrc = fs.readFileSync(CRAWLER_SCRIPT, 'utf-8');
-    const match = crawlerSrc.match(/const HOT_TERMS = (\[[\s\S]*?\]);/);
-    if (match) {
-      const staticTerms = JSON.parse(match[1]);
-      for (const t of staticTerms) {
-        addTerm(t.term, 'Static', t.weight * 3);
-      }
-    }
-  } catch (e) {}
-
-  for (const t of allSourceResults) {
-    addTerm(t.term, t.source, t.weight);
-  }
-
-  // Sort by weight descending
-  const allTerms = Array.from(termMap.values())
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 50);
-
-  // Separate AI and non-AI, interleave but prioritize AI
+  for (const t of allSourceResults) addTerm(t.term, t.source, t.weight);
+  const allTerms = Array.from(termMap.values()).sort((a, b) => b.weight - a.weight).slice(0, 40);
   const aiTerms = allTerms.filter(t => t.isAiRelated);
   const otherTerms = allTerms.filter(t => !t.isAiRelated);
-  const sorted = [...aiTerms, ...otherTerms].slice(0, 40);
-
+  const sorted = [...aiTerms, ...otherTerms].slice(0, 30);
   liveHotTermsCache = { terms: sorted, fetchedAt: Date.now() };
-  console.log(`  [HotTerms] Fetched ${sorted.length} live terms from ${allSourceResults.length} results (${aiTerms.length} AI-related)`);
+  console.log(`  [HotTerms] Fallback: ${sorted.length} terms from local sources (${aiTerms.length} AI-related)`);
   return sorted;
 }
 
