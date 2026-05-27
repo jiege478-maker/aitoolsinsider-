@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <span class="category-badge">${escHtml(categoryName)}</span>
           </div>
           <div class="featured-card-body">
-            <h3><a href="/article?slug=${escHtml(article.slug)}">${truncate(escHtml(article.title), 70)}</a></h3>
+            <h3><a href="/article/${escHtml(article.slug)}">${truncate(escHtml(article.title), 70)}</a></h3>
             <div class="excerpt">${escHtml(excerpt)}</div>
             <div class="featured-card-meta">
               <span class="rating">${renderStars(rating)}</span>
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async function() {
           <span class="category-badge">${escHtml(categoryName)}</span>
         </div>
         <div class="article-card-body">
-          <h3><a href="/article?slug=${escHtml(article.slug)}">${escHtml(article.title)}</a></h3>
+          <h3><a href="/article/${escHtml(article.slug)}">${escHtml(article.title)}</a></h3>
           <div class="excerpt">${escHtml(excerpt)}</div>
           <div class="article-card-meta">
             <span class="rating">${renderStars(rating)}</span>
@@ -277,16 +277,33 @@ document.addEventListener('DOMContentLoaded', async function() {
   // ===== ARTICLE PAGE LOGIC =====
   const articleTitle = document.getElementById('articleTitle');
   if (articleTitle) {
-    // We're on the article page
-    const urlParams = new URLSearchParams(window.location.search);
-    const slug = urlParams.get('slug');
+    // We're on the article page — check for SSR-embedded data first
+    const ssrScript = document.getElementById('ssrArticleData');
+    let article = null;
+    let slug = null;
+
+    if (ssrScript) {
+      try { article = JSON.parse(ssrScript.textContent); } catch (e) {}
+      if (article) slug = article.slug;
+    }
+
+    if (!article) {
+      // Client-side: parse slug from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      slug = urlParams.get('slug');
+      if (!slug) {
+        // Check clean URL format: /article/some-slug
+        const pathMatch = window.location.pathname.match(/^\/article\/(.+)$/);
+        if (pathMatch) slug = decodeURIComponent(pathMatch[1]);
+      }
+    }
 
     if (!slug) {
       articleTitle.textContent = 'Article not found';
       document.getElementById('articleBody').innerHTML = '<p>The article you\'re looking for does not exist.</p>';
     } else {
       try {
-        const article = await fetchArticleBySlug(slug);
+        if (!article) article = await fetchArticleBySlug(slug);
         if (!article) {
           articleTitle.textContent = 'Article not found';
           document.getElementById('articleBody').innerHTML = '<p>The article you\'re looking for does not exist.</p>';
@@ -294,21 +311,27 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Update page title and meta
           document.title = article.title + ' - AI Tools Insider';
           document.querySelector('meta[name="description"]').content = article.description || '';
-          document.querySelector('link[rel="canonical"]').href = 'https://toolrankly.com/article?slug=' + slug;
+          document.querySelector('link[rel="canonical"]').href = 'https://toolrankly.com/article/' + encodeURIComponent(slug);
           document.querySelector('meta[property="og:title"]').content = article.title;
           document.querySelector('meta[property="og:description"]').content = article.description || '';
-          document.querySelector('meta[property="og:url"]').content = 'https://toolrankly.com/article?slug=' + slug;
+          document.querySelector('meta[property="og:url"]').content = 'https://toolrankly.com/article/' + encodeURIComponent(slug);
           document.querySelector('meta[name="twitter:title"]').content = article.title;
           document.querySelector('meta[name="twitter:description"]').content = article.description || '';
 
-          // Schema
+          // Schema — build fresh on client side (SSR already has it correct)
           const schemaScript = document.getElementById('schemaArticle');
           if (schemaScript) {
-            const schema = JSON.parse(schemaScript.textContent);
-            schema.headline = article.title;
-            schema.description = article.description || '';
-            schema.datePublished = article.created_at;
-            schema.dateModified = article.updated_at || article.created_at;
+            const schema = {
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: article.title,
+              description: article.description || '',
+              image: article.image_url || 'https://toolrankly.com/images/default-og.png',
+              datePublished: article.created_at,
+              dateModified: article.updated_at || article.created_at,
+              author: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://toolrankly.com' },
+              publisher: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://toolrankly.com' }
+            };
             schemaScript.textContent = JSON.stringify(schema);
           }
 
@@ -365,7 +388,7 @@ document.addEventListener('DOMContentLoaded', async function() {
               relatedContainer.innerHTML = related.map(r => {
                 var t = escHtml(r.title);
                 t = t.length > 45 ? t.substring(0, 42) + '...' : t;
-                return '<li><a href="/article?slug=' + escHtml(r.slug) + '">' + t + '</a></li>';
+                return '<li><a href="/article/' + escHtml(r.slug) + '">' + t + '</a></li>';
               }).join('');
             } else {
               relatedContainer.innerHTML = '<li style="color:var(--text-muted);font-size:13px;">No related articles yet.</li>';

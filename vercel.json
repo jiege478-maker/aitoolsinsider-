@@ -37,6 +37,9 @@
       "permanent": true
     }
   ],
+  "rewrites": [
+    { "source": "/article/:slug", "destination": "/api/article?slug=:slug" }
+  ],
   "trailingSlash": false,
   "headers": [
     {
