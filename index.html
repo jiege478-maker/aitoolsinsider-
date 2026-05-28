@@ -75,8 +75,6 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
   </div>
 </section>
 
-<div id="categorySections"></div>
-
 <section class="section">
   <div class="container">
     <div class="section-header">
@@ -85,6 +83,12 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
     </div>
     <div class="card-grid" id="allArticlesGrid"></div>
     <div id="noResults" class="no-results" style="display:none;">No articles found. Try a different search term.</div>
+    <!-- Pagination -->
+    <div id="frontPagination" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:32px">
+      <button id="prevPageBtn" class="btn-prev" onclick="changePage(-1)" style="padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;display:none">← Previous</button>
+      <span id="pageIndicator" style="font-size:14px;color:#64748b"></span>
+      <button id="nextPageBtn" class="btn-next" onclick="changePage(1)" style="padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;display:none">Next →</button>
+    </div>
   </div>
 </section>
 

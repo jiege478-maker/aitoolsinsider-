@@ -122,7 +122,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // ===== HOMEPAGE LOGIC =====
-  const categorySections = document.getElementById('categorySections');
   const allArticlesGrid = document.getElementById('allArticlesGrid');
   const articleCount = document.getElementById('articleCount');
   const noResults = document.getElementById('noResults');
@@ -131,51 +130,83 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Search data — accessible on all pages
   let allArticles = [];
 
-  function renderAllArticles(articles) {
+  // Pagination state
+  var pageSize = 12;
+  var currentPage = 0;
+
+  function renderPage() {
     if (!allArticlesGrid) return;
-    if (articles.length === 0) {
+    var term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    var filtered = term ? allArticles.filter(function(a) {
+      return a.title.toLowerCase().includes(term) ||
+        (a.description && a.description.toLowerCase().includes(term)) ||
+        (a.tags && a.tags.some(function(t) { return t.toLowerCase().includes(term); }));
+    }) : allArticles;
+
+    if (filtered.length === 0) {
       allArticlesGrid.innerHTML = '';
       if (noResults) noResults.style.display = 'block';
-      if (articleCount) {
-        const si = document.getElementById('searchInput');
-        articleCount.textContent = si && si.value.trim() ? '0 results for "' + si.value.trim() + '"' : '0 articles';
-      }
+      if (articleCount) articleCount.textContent = term ? '0 results for "' + term + '"' : '0 articles';
+      document.getElementById('prevPageBtn').style.display = 'none';
+      document.getElementById('nextPageBtn').style.display = 'none';
+      document.getElementById('pageIndicator').textContent = '';
       return;
     }
     if (noResults) noResults.style.display = 'none';
-    if (articleCount) {
-      const si = document.getElementById('searchInput');
-      const searchTerm = si && si.value.trim();
-      articleCount.textContent = searchTerm
-        ? articles.length + ' results for "' + searchTerm + '"'
-        : articles.length + ' articles';
+
+    // Remove duplicates
+    var seen = {};
+    var unique = [];
+    for (var i = 0; i < filtered.length; i++) {
+      if (!seen[filtered[i].id]) {
+        seen[filtered[i].id] = true;
+        unique.push(filtered[i]);
+      }
     }
-    // Remove duplicates by id
-    const seen = new Set();
-    const unique = articles.filter(a => {
-      if (seen.has(a.id)) return false;
-      seen.add(a.id);
-      return true;
-    });
-    allArticlesGrid.innerHTML = unique.map(a => createArticleCard(a, false)).join('');
+
+    var totalPages = Math.ceil(unique.length / pageSize);
+    if (currentPage >= totalPages) currentPage = totalPages - 1;
+    if (currentPage < 0) currentPage = 0;
+
+    var start = currentPage * pageSize;
+    var pageItems = unique.slice(start, start + pageSize);
+
+    if (articleCount) {
+      articleCount.textContent = term
+        ? unique.length + ' results for "' + term + '"'
+        : unique.length + ' articles';
+    }
+
+    allArticlesGrid.innerHTML = pageItems.map(function(a) { return createArticleCard(a, false); }).join('');
+
+    // Pagination controls
+    var prevBtn = document.getElementById('prevPageBtn');
+    var nextBtn = document.getElementById('nextPageBtn');
+    var indicator = document.getElementById('pageIndicator');
+
+    if (totalPages <= 1) {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      indicator.textContent = '';
+    } else {
+      prevBtn.style.display = '';
+      nextBtn.style.display = '';
+      indicator.textContent = 'Page ' + (currentPage + 1) + ' of ' + totalPages;
+      prevBtn.disabled = currentPage <= 0;
+      nextBtn.disabled = currentPage >= totalPages - 1;
+    }
   }
 
-  // ===== Global search (document-level delegation, survives DOM replacements) =====
+  window.changePage = function(delta) {
+    currentPage += delta;
+    renderPage();
+    // Scroll to grid
+    if (allArticlesGrid) allArticlesGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   function applySearchFilter() {
-    const input = document.getElementById('searchInput');
-    if (!input) return;
-    const term = input.value.toLowerCase().trim();
-    const filtered = term ? allArticles.filter(a =>
-      a.title.toLowerCase().includes(term) ||
-      (a.description && a.description.toLowerCase().includes(term)) ||
-      (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-    ) : allArticles;
-    renderAllArticles(filtered);
-    // Scroll to results when search is active
-    if (term && document.getElementById('allArticlesGrid')) {
-      const el = document.getElementById('allArticlesGrid');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    currentPage = 0;
+    renderPage();
   }
 
   // Delegate on document — catches events regardless of DOM replacements
@@ -196,29 +227,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         e.preventDefault();
         applySearchFilter();
       }
-      // Article page: let it navigate naturally
     }
   });
 
   if (allArticlesGrid) {
     // Homepage — load data
-    let categories = [];
-    let currentFilterCategory = null;
+    var currentFilterCategory = null;
 
     try {
       // Parse URL filter
-      const urlParams = new URLSearchParams(window.location.search);
+      var urlParams = new URLSearchParams(window.location.search);
       currentFilterCategory = urlParams.get('category') || null;
-
-      categories = await fetchCategories();
-
-      // Fetch articles
-      allArticles = await fetchPublishedArticles(currentFilterCategory);
 
       // Set active nav
       if (currentFilterCategory) {
         document.querySelectorAll('.nav a').forEach(function(link) {
-          const filter = link.getAttribute('data-filter');
+          var filter = link.getAttribute('data-filter');
           if (filter === currentFilterCategory) {
             document.querySelectorAll('.nav a').forEach(function(l) { l.classList.remove('active'); });
             link.classList.add('active');
@@ -226,43 +250,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
       }
 
-      // Category sections (only when no filter)
-      if (!currentFilterCategory && categorySections) {
-        let sectionsHtml = '';
-        for (const cat of categories) {
-          const catArticles = allArticles.filter(a => a.category_id === cat.id);
-          sectionsHtml += createCategorySection(cat, catArticles);
-        }
-        categorySections.innerHTML = sectionsHtml;
-      } else {
-        categorySections.innerHTML = '';
+      // Fetch articles & categories (for nav)
+      allArticles = await fetchPublishedArticles(currentFilterCategory);
+      var cats = await fetchCategories();
+      var catNav = document.getElementById('categoryNav');
+      if (catNav && !currentFilterCategory) {
+        // Only update nav on article page
       }
 
-      // All articles grid
-      renderAllArticles(allArticles);
+      // Render with pagination
+      currentPage = 0;
+      renderPage();
 
       // URL search query on page load (e.g. from article page search)
-      const searchQuery = urlParams.get('s');
+      var searchQuery = urlParams.get('s');
       if (searchQuery && searchInput) {
         searchInput.value = searchQuery;
-        const term = searchQuery.toLowerCase().trim();
-        const filtered = term ? allArticles.filter(a =>
-          a.title.toLowerCase().includes(term) ||
-          (a.description && a.description.toLowerCase().includes(term)) ||
-          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-        ) : allArticles;
-        renderAllArticles(filtered);
+        applySearchFilter();
       }
 
       // Re-apply search filter if user typed before data loaded
       if (searchInput && searchInput.value.trim()) {
-        const term = searchInput.value.toLowerCase().trim();
-        const filtered = term ? allArticles.filter(a =>
-          a.title.toLowerCase().includes(term) ||
-          (a.description && a.description.toLowerCase().includes(term)) ||
-          (a.tags && a.tags.some(t => t.toLowerCase().includes(term)))
-        ) : allArticles;
-        renderAllArticles(filtered);
+        applySearchFilter();
       }
     } catch (e) {
       console.error('Failed to load data:', e);
@@ -270,8 +279,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         allArticlesGrid.innerHTML = '<div class="no-results">Failed to load articles. Please check your Supabase configuration in /js/supabase-client.js</div>';
       }
     }
-
-    // All sections populate progressively as data loads
   }
 
   // ===== ARTICLE PAGE LOGIC =====

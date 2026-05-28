@@ -58,7 +58,8 @@ const DEDUP_FILE = path.join(__dirname, 'crawled-urls.json');
 
 const FEEDS = [
   // ===== AI Companies =====
-  { url: 'https://openai.com/news/rss.xml', name: 'openai' },
+  // OpenAI 全站 403/404，暂时关闭
+  // { url: 'https://openai.com/news/rss.xml', name: 'openai' },
   { url: 'https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml', name: 'anthropic' },
   { url: 'https://blog.google/technology/ai/rss/', name: 'google-ai' },
   { url: 'https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml', name: 'meta-ai' },
@@ -99,6 +100,9 @@ const FEEDS = [
   { url: 'https://www.langchain.com/blog/rss.xml', name: 'langchain' },
   { url: 'https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_pinecone.xml', name: 'pinecone' },
   { url: 'https://huggingface.co/blog/feed.xml', name: 'huggingface-blog' },
+  // ===== Additional Tutorial Sources =====
+  { url: 'https://neptune.ai/blog/feed/', name: 'neptune' },
+  { url: 'https://www.datacamp.com/community/feed', name: 'datacamp' },
 ];
 
 // GitHub repos: search for AI tutorial repos
@@ -398,8 +402,8 @@ function isQualityContent(title, html) {
   const text = html.replace(/<[^>]+>/g, '').trim();
   const words = text.split(/\s+/);
 
-  // Must have at least 100 words of raw text
-  if (words.length < 100) {
+  // Must have at least 300 words of raw text (was 100)
+  if (words.length < 300) {
     return false;
   }
 
@@ -414,9 +418,9 @@ function isQualityContent(title, html) {
   }
   const substantialWords = substantialText.trim().split(/\s+/).filter(Boolean);
 
-  // Must have at least 40 words of real paragraph content
+  // Must have at least 150 words of real paragraph content
   // (filters out listing pages with only image cards/metadata)
-  if (substantialWords.length < 40) {
+  if (substantialWords.length < 150) {
     return false;
   }
 
@@ -556,8 +560,35 @@ function isTutorialOrDeployment(title, content) {
 }
 
 /**
- * Detect AI-template-generated content (e.g. [HOOK], [MAIN - TAKEAWAY], [OUTRO] markers)
+ * Detect press-release / announcement articles that are too short to be useful.
+ * These are common on company blogs (Anthropic, OpenAI, etc.) — partnerships,
+ * funding rounds, office openings, executive appointments.
  */
+function isPressRelease(title, content) {
+  const t = (title || '').toLowerCase();
+  const c = (content || '').toLowerCase();
+  const text = t + ' ' + c.substring(0, 2000);
+
+  const announcePatterns = [
+    /\b(announce|announcing|announces|announced)\b/i,
+    /\b(partners? with|partnership|collaborat(e|ion|es|ing))\b/i,
+    /\b(raises?\s+\$|funding|series\s+[a-z]|valuation)\b/i,
+    /\b(appoints?|joins?\s+as|named\s+(as\s+)?)\b/i,
+    /\b(opens?\s+(new\s+)?office|expand(s|ing)?\s+to|launch(es|ed|ing)?\s+in)\b/i,
+    /\b(signs?\s+|mou|memorandum\s+of\s+understanding)\b/i,
+    /\b(donat(e|es|ing|ed)\s+\$|invest(s|ing|ed)?\s+\$)\b/i,
+  ];
+
+  let matchCount = 0;
+  for (const p of announcePatterns) {
+    if (p.test(text)) matchCount++;
+  }
+
+  // 2+ announcement patterns = likely a press release
+  // Only filter if content is short (< 600 words)
+  const wordCount = c.split(/\s+/).length;
+  return matchCount >= 2 && wordCount < 600;
+}
 function isAiTemplateContent(title, content) {
   const fullText = title + ' ' + content;
 
@@ -977,8 +1008,11 @@ let PROXY_URL = process.env.HTTP_PROXY || process.env.HTTPS_PROXY || null;
 if (!PROXY_URL && process.platform === 'win32') {
   try {
     const { execSync } = require('child_process');
-    const psOut = execSync('powershell -Command "Get-ItemProperty -Path \'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\' | Select-Object -ExpandProperty ProxyServer"', { encoding: 'utf8', timeout: 3000 }).trim();
-    if (psOut) PROXY_URL = 'http://' + psOut;
+    const psOut = execSync('powershell -Command "Get-ItemProperty -Path \'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\' | Select-Object ProxyServer, ProxyEnable | ConvertTo-Json"', { encoding: 'utf8', timeout: 3000 }).trim();
+    const ps = JSON.parse(psOut);
+    if (ps.ProxyServer && ps.ProxyEnable === 1) {
+      PROXY_URL = 'http://' + ps.ProxyServer;
+    }
   } catch(e) { /* no windows proxy detected */ }
 }
 let rssAgent = undefined;
@@ -989,7 +1023,7 @@ if (PROXY_URL) {
 }
 
 const rssParser = new RssParser({
-  timeout: 15000,
+  timeout: 30000,
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml',
@@ -1039,13 +1073,31 @@ async function scrapeContent(url) {
     // Block only heavy media (allow CSS for JS-rendered sites)
     await page.route(/\.(png|jpg|jpeg|gif|svg|woff2?|ttf|eot)(\?.*)?$/i, route => route.abort());
 
-    // Navigate: try domcontentloaded first (faster), wait for content to settle
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
-    // Give JS-rendered content time to appear
-    await page.waitForTimeout(3000);
-    // Scroll to trigger lazy content
-    await page.evaluate(() => window.scrollTo(0, 500)).catch(() => {});
-    await page.waitForTimeout(2000);
+    // Navigate: try domcontentloaded first (faster)
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 }).catch(() => {});
+
+    // Wait for content container to appear (handles JS-rendered sites)
+    const contentSelectors = ['article', '.post-content', '.entry-content', '.article-content', '.content', 'main', '.markdown-body', '.c-blog-post'];
+    for (const sel of contentSelectors) {
+      try {
+        await page.waitForSelector(sel, { timeout: 5000 });
+        break;
+      } catch (e) { /* try next selector */ }
+    }
+
+    // Scroll in steps to trigger lazy-loaded content
+    await page.evaluate(async () => {
+      const step = 400;
+      const total = Math.min(document.body.scrollHeight || 3000, 3000);
+      for (let y = 0; y < total; y += step) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }).catch(() => {});
+    await page.waitForTimeout(1000);
+    // Scroll back to top
+    await page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
+    await page.waitForTimeout(500);
 
     // Get page content
     const html = await page.content();
@@ -1419,6 +1471,13 @@ async function main() {
     // AI template content filter (e.g. [HOOK], [OUTRO], Meta Information blocks)
     if (isAiTemplateContent(title, scraped.content)) {
       console.log(`  [SKIP] ${title.substring(0, 60)} — AI template content`);
+      skipped++;
+      continue;
+    }
+
+    // Press-release / announcement filter (short non-tutorial articles)
+    if (isPressRelease(title, scraped.content)) {
+      console.log(`  [SKIP] ${title.substring(0, 60)} — press release`);
       skipped++;
       continue;
     }

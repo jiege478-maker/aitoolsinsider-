@@ -311,6 +311,14 @@ tr:hover td{background:#f8fafc}
         <thead><tr><th style="width:32px"><input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this)"></th><th>ID</th><th>标题</th><th>分类</th><th>状态</th><th>阅读</th><th>评分</th><th style="width:100px">操作</th></tr></thead>
         <tbody id="artBody"></tbody>
       </table>
+      <!-- Pagination -->
+      <div id="paginationBar" style="display:none;padding:10px 12px;border-top:1px solid #e8ecf0;align-items:center;justify-content:space-between;font-size:13px">
+        <span id="pageInfo" style="color:#64748b"></span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-s btn-xs" id="btnPrevPage" onclick="loadPage(-1)">← 上一页</button>
+          <button class="btn btn-s btn-xs" id="btnNextPage" onclick="loadPage(1)">下一页 →</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -600,6 +608,9 @@ var currentEditId = null;
 var _previewArticleId = null;
 var articleFilter = 'all';
 var selectedIds = new Set();
+var articlePage = 0;
+var pageSize = 50;
+var totalArticles = 0;
 
 function toggleSelectAll(checkbox) {
   var checks = document.querySelectorAll('.article-check');
@@ -644,12 +655,32 @@ async function loadArticles() {
   document.getElementById('artLoading').style.display='';document.getElementById('artLoading').innerHTML='<div class="sp"></div>加载中...';
   document.getElementById('artTable').style.display='none';
   document.getElementById('artError').style.display='none';
+  document.getElementById('paginationBar').style.display='none';
   // Init filter button styles
   document.getElementById('filter-all').style.fontWeight = articleFilter === 'all' ? '600' : 'normal';
   document.getElementById('filter-draft').style.fontWeight = articleFilter === 'draft' ? '600' : 'normal';
   document.getElementById('filter-published').style.fontWeight = articleFilter === 'published' ? '600' : 'normal';
   try {
-    var articles = await api('/rest/v1/articles?select=*,categories(id,name)&order=created_at.desc');
+    // Build filter params
+    var filterParam = '';
+    if (articleFilter === 'draft') filterParam = '&published=eq.false';
+    else if (articleFilter === 'published') filterParam = '&published=eq.true';
+
+    // Get total count
+    var countRes = await fetch(SUPABASE_URL + '/rest/v1/articles?select=id&limit=0' + filterParam, {
+      headers: {'apikey': ADMIN_KEY, 'Authorization': 'Bearer ' + ADMIN_KEY, 'Prefer': 'count=exact'}
+    });
+    totalArticles = parseInt(countRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+    if (totalArticles === 0) { totalArticles = 0; }
+
+    // Clamp page
+    var maxPage = Math.max(0, Math.ceil(totalArticles / pageSize) - 1);
+    if (articlePage > maxPage) articlePage = maxPage;
+    if (articlePage < 0) articlePage = 0;
+
+    // Fetch page
+    var offset = articlePage * pageSize;
+    var articles = await api('/rest/v1/articles?select=*,categories(id,name)&order=created_at.desc&limit=' + pageSize + '&offset=' + offset + filterParam);
     renderArticles(articles);
   } catch(e) {
     document.getElementById('artLoading').style.display='none';
@@ -658,8 +689,14 @@ async function loadArticles() {
   }
 }
 
+function loadPage(delta) {
+  articlePage += delta;
+  loadArticles();
+}
+
 function setArticleFilter(filter) {
   articleFilter = filter;
+  articlePage = 0;
   document.getElementById('filter-all').style.fontWeight = filter === 'all' ? '600' : 'normal';
   document.getElementById('filter-draft').style.fontWeight = filter === 'draft' ? '600' : 'normal';
   document.getElementById('filter-published').style.fontWeight = filter === 'published' ? '600' : 'normal';
@@ -667,18 +704,21 @@ function setArticleFilter(filter) {
 }
 
 function renderArticles(articles) {
-  var draftCount = articles.filter(function(a){return !a.published}).length;
-  var pubCount = articles.filter(function(a){return a.published}).length;
-  document.getElementById('articleSub').textContent='共 '+articles.length+' 篇（草稿 '+draftCount+' · 已发布 '+pubCount+'）';
-
-  // Apply filter
-  if (articleFilter === 'draft') {
-    articles = articles.filter(function(a){return !a.published});
-  } else if (articleFilter === 'published') {
-    articles = articles.filter(function(a){return a.published});
-  }
-
-  document.getElementById('articleCount').textContent=articles.length+' 篇';
+  // Get counts from totalArticles (server-side)
+  var showing = articles.length;
+  var start = totalArticles === 0 ? 0 : (articlePage * pageSize + 1);
+  var end = Math.min((articlePage + 1) * pageSize, totalArticles);
+  var filterLabel = articleFilter === 'all' ? '全部' : (articleFilter === 'draft' ? '草稿' : '已发布');
+  document.getElementById('articleSub').textContent=filterLabel+'文章，共 '+totalArticles+' 篇';
+  document.getElementById('articleCount').textContent='第 '+(articlePage+1)+'/'+Math.max(1,Math.ceil(totalArticles/pageSize))+' 页，共 '+totalArticles+' 篇';
+  // Update pagination bar
+  var pagBar = document.getElementById('paginationBar');
+  var pageInfo = document.getElementById('pageInfo');
+  var totalPages = Math.max(1, Math.ceil(totalArticles / pageSize));
+  pageInfo.textContent = '第 '+(articlePage+1)+' / '+totalPages+' 页（'+totalArticles+' 篇）';
+  document.getElementById('btnPrevPage').disabled = articlePage <= 0;
+  document.getElementById('btnNextPage').disabled = articlePage >= totalPages - 1;
+  pagBar.style.display = 'flex';
   document.getElementById('artLoading').style.display='none';
   document.getElementById('artTable').style.display='';
 
@@ -942,7 +982,6 @@ async function doSaveArticle(skipConfirm) {
       toast(published ? '文章已发布！' : '草稿已保存！', 'ok');
     }
     closeEditor();
-    loadArticles();
   } catch (e) { toast('保存失败: ' + e.message, 'er'); }
 }
 
@@ -961,7 +1000,6 @@ async function deleteArticle(id) {
   try {
     await api('/rest/v1/articles?id=eq.'+id,{method:'DELETE'});
     toast('文章 #'+id+' 已删除','ok');
-    loadArticles();
   } catch(e) {toast('删除失败: '+e.message,'er');}
 }
 
@@ -978,7 +1016,6 @@ async function batchPublish() {
     });
     toast('已发布 ' + ids.length + ' 篇', 'ok');
     clearSelection();
-    loadArticles();
   } catch (e) { toast('批量发布失败: ' + e.message, 'er'); }
 }
 
@@ -992,7 +1029,6 @@ async function batchDelete() {
       await api('/rest/v1/articles?id=in.(' + ids.join(',') + ')', { method: 'DELETE' });
       toast('已删除 ' + ids.length + ' 篇', 'ok');
       clearSelection();
-      loadArticles();
     } catch (e) { toast('批量删除失败: ' + e.message, 'er'); }
   };
   document.getElementById('deleteModal').style.display = 'flex';
