@@ -87,14 +87,14 @@ module.exports = async (req, res) => {
       image_url: image,
     });
 
-    // Replace SSR markers
+    // Replace SSR markers (use replaceAll for markers that appear multiple times)
     html = html.replace('<!-- SSR_TITLE -->', title);
     html = html.replace('<!-- /SSR_TITLE -->', '');
     html = html.replace('<!-- SSR_DESCRIPTION -->', description);
-    html = html.replace('<!-- SSR_CANONICAL -->', canonical);
-    html = html.replace('<!-- SSR_OG_TITLE -->', title);
-    html = html.replace('<!-- SSR_OG_DESC -->', description);
-    html = html.replace('<!-- SSR_OG_IMAGE -->', image);
+    html = html.replaceAll('<!-- SSR_CANONICAL -->', canonical);
+    html = html.replaceAll('<!-- SSR_OG_TITLE -->', title);
+    html = html.replaceAll('<!-- SSR_OG_DESC -->', description);
+    html = html.replaceAll('<!-- SSR_OG_IMAGE -->', image);
     html = html.replace('<!-- SSR_SCHEMA -->', schema);
 
     // Embed article data for client-side hydration (before </head>)
