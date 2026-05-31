@@ -68,7 +68,7 @@ async function generateSitemap() {
   for (const a of articles) {
     const mod = (a.updated_at || '').slice(0, 10) || today;
     const slug = encodeURIComponent(a.slug);
-    xml += `  <url>\n    <loc>${SITE_URL}/article?slug=${slug}</loc>\n    <lastmod>${mod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${SITE_URL}/article/${slug}</loc>\n    <lastmod>${mod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
   }
 
   xml += '</urlset>';

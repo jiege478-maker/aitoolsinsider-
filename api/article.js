@@ -43,11 +43,11 @@ module.exports = async (req, res) => {
     const description = article.description || '';
     const categoryName = article.categories?.name || 'General';
     const content = article.content || '';
-    const image = article.image_url || 'https://toolrankly.com/images/default-og.png';
+    const image = article.image_url || 'https://www.toolrankly.com/images/default-og.png';
     const rating = parseFloat(article.rating) || 0;
     const readTime = article.read_time || 5;
     const date = article.created_at ? new Date(article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-    const canonical = `https://toolrankly.com/article/${encodeURIComponent(slug)}`;
+    const canonical = `https://www.toolrankly.com/article/${encodeURIComponent(slug)}`;
 
     // Build schema
     const schema = JSON.stringify({
@@ -61,12 +61,12 @@ module.exports = async (req, res) => {
       author: {
         '@type': 'Organization',
         name: 'AI Tools Insider',
-        url: 'https://toolrankly.com'
+        url: 'https://www.toolrankly.com'
       },
       publisher: {
         '@type': 'Organization',
         name: 'AI Tools Insider',
-        url: 'https://toolrankly.com'
+        url: 'https://www.toolrankly.com'
       }
     });
 

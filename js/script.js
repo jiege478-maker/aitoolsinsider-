@@ -318,10 +318,10 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Update page title and meta
           document.title = article.title + ' - AI Tools Insider';
           document.querySelector('meta[name="description"]').content = article.description || '';
-          document.querySelector('link[rel="canonical"]').href = 'https://toolrankly.com/article/' + encodeURIComponent(slug);
+          document.querySelector('link[rel="canonical"]').href = 'https://www.toolrankly.com/article/' + encodeURIComponent(slug);
           document.querySelector('meta[property="og:title"]').content = article.title;
           document.querySelector('meta[property="og:description"]').content = article.description || '';
-          document.querySelector('meta[property="og:url"]').content = 'https://toolrankly.com/article/' + encodeURIComponent(slug);
+          document.querySelector('meta[property="og:url"]').content = 'https://www.toolrankly.com/article/' + encodeURIComponent(slug);
           document.querySelector('meta[name="twitter:title"]').content = article.title;
           document.querySelector('meta[name="twitter:description"]').content = article.description || '';
 
@@ -333,11 +333,11 @@ document.addEventListener('DOMContentLoaded', async function() {
               '@type': 'Article',
               headline: article.title,
               description: article.description || '',
-              image: article.image_url || 'https://toolrankly.com/images/default-og.png',
+              image: article.image_url || 'https://www.toolrankly.com/images/default-og.png',
               datePublished: article.created_at,
               dateModified: article.updated_at || article.created_at,
-              author: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://toolrankly.com' },
-              publisher: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://toolrankly.com' }
+              author: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://www.toolrankly.com' },
+              publisher: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://www.toolrankly.com' }
             };
             schemaScript.textContent = JSON.stringify(schema);
           }
