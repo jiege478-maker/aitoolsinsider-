@@ -2,25 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.toolrankly.com/</loc>
-    <lastmod>2026-05-31</lastmod>
+    <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.toolrankly.com/about.html</loc>
-    <lastmod>2026-05-31</lastmod>
+    <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://www.toolrankly.com/contact.html</loc>
-    <lastmod>2026-05-31</lastmod>
+    <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://www.toolrankly.com/privacy.html</loc>
-    <lastmod>2026-05-31</lastmod>
+    <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -158,12 +158,6 @@
   </url>
   <url>
     <loc>https://www.toolrankly.com/article/gemini-when-preprocessing-helps-when-hurts-image-classificat</loc>
-    <lastmod>2026-05-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.toolrankly.com/article/ai-agent-building-smarter-ai-workflows-agent-studio</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -355,12 +349,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.toolrankly.com/article/ai-agent-i-tested-5-free-ai-writing-tools-2026-heres-which-o</loc>
-    <lastmod>2026-05-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://www.toolrankly.com/article/really-happens-when-ai-agents-run-sitcom-247</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -398,12 +386,6 @@
   </url>
   <url>
     <loc>https://www.toolrankly.com/article/chatgpt-ai-driven-product-research-validation-zero-cost</loc>
-    <lastmod>2026-05-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.toolrankly.com/article/ai-agents-help-you-navigate-chinas-advertising-law</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -565,24 +547,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.toolrankly.com/article/i-gave-adhd-claude-thinking-2x-better-now</loc>
-    <lastmod>2026-05-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.toolrankly.com/article/llm-panorama-stitching-deep-dive-problem-embedding-lookup</loc>
-    <lastmod>2026-05-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.toolrankly.com/article/anthropic-sandboxing-agents-by-capability-level</loc>
-    <lastmod>2026-05-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://www.toolrankly.com/article/rag-i-analyzed-500-manus-ai-tasks-find-optimal-credit-strate</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -734,12 +698,6 @@
   </url>
   <url>
     <loc>https://www.toolrankly.com/article/anthropic-acquires-vercept-advance-claudes-computer-capabili</loc>
-    <lastmod>2026-05-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.toolrankly.com/article/anthropic-partners-google-cloud</loc>
     <lastmod>2026-05-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -997,12 +955,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.toolrankly.com/article/zoom-partnership-investment-anthropic</loc>
-    <lastmod>2026-05-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://www.toolrankly.com/article/anthropic-infosys-collaborate-build-ai-agents-telecommunicat</loc>
     <lastmod>2026-05-28</lastmod>
     <changefreq>monthly</changefreq>
@@ -1058,12 +1010,6 @@
   </url>
   <url>
     <loc>https://www.toolrankly.com/article/claude-now-generally-available-xcode</loc>
-    <lastmod>2026-05-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.toolrankly.com/article/claude-alexa</loc>
     <lastmod>2026-05-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
