@@ -1,4 +1,4 @@
-// Vercel Serverless Function — SSR Article Pages
+// Vercel Serverless Function — SSR Tool Detail Pages
 // Reads article.html template, fetches article from Supabase by slug,
 // replaces SSR markers with actual data, returns complete HTML.
 
@@ -39,34 +39,40 @@ module.exports = async (req, res) => {
     const templatePath = path.join(process.cwd(), 'article.html');
     let html = fs.readFileSync(templatePath, 'utf-8');
 
-    const title = article.title || 'Article';
+    const title = article.title || 'Tool';
     const description = article.description || '';
     const categoryName = article.categories?.name || 'General';
     const content = article.content || '';
-    const image = article.image_url || 'https://www.toolrankly.com/images/default-og.png';
+    const image = article.image_url || 'https://www.toolrankly.com/images/og-default.svg';
     const rating = parseFloat(article.rating) || 0;
-    const readTime = article.read_time || 5;
     const date = article.created_at ? new Date(article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
     const canonical = `https://www.toolrankly.com/article/${encodeURIComponent(slug)}`;
 
-    // Build schema
+    // Build schema (Product + Review)
     const schema = JSON.stringify({
       '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline: title,
+      '@type': 'Product',
+      name: title,
       description: description,
       image: image,
-      datePublished: article.created_at,
-      dateModified: article.updated_at || article.created_at,
-      author: {
-        '@type': 'Organization',
-        name: 'AI Tools Insider',
-        url: 'https://www.toolrankly.com'
+      url: canonical,
+      review: {
+        '@type': 'Review',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: rating,
+          bestRating: 5,
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'AI Tools Insider',
+          url: 'https://www.toolrankly.com'
+        }
       },
-      publisher: {
-        '@type': 'Organization',
-        name: 'AI Tools Insider',
-        url: 'https://www.toolrankly.com'
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'USD',
+        availability: 'https://schema.org/OnlineOnly'
       }
     });
 
@@ -80,14 +86,14 @@ module.exports = async (req, res) => {
       category_id: article.category_id,
       categories: article.categories,
       rating: rating,
-      read_time: readTime,
+      read_time: article.read_time,
       created_at: article.created_at,
       updated_at: article.updated_at,
       tags: article.tags,
       image_url: image,
     });
 
-    // Replace SSR markers (use replaceAll for markers that appear multiple times)
+    // Replace SSR markers
     html = html.replace('<!-- SSR_TITLE -->', title);
     html = html.replace('<!-- /SSR_TITLE -->', '');
     html = html.replace('<!-- SSR_DESCRIPTION -->', description);

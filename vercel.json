@@ -1,15 +1,18 @@
 {
   "cleanUrls": true,
-  "redirects": [
-    {
-      "source": "/articles/:slug",
-      "destination": "/article/:slug",
-      "permanent": true
-    }
-  ],
   "rewrites": [
-    { "source": "/article/:slug", "destination": "/api/article?slug=:slug" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+    {
+      "source": "/article/:slug",
+      "destination": "/api/article?slug=:slug"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/model/:slug",
+      "destination": "/api/model?slug=:slug"
+    }
   ],
   "trailingSlash": false,
   "headers": [

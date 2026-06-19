@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><!-- SSR_TITLE --></title>
+  <title><!-- SSR_TITLE --> - AI Tools Insider</title>
   <meta name="description" content="<!-- SSR_DESCRIPTION -->">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="<!-- SSR_CANONICAL -->">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="<!-- SSR_OG_TITLE -->">
+  <meta property="og:title" content="<!-- SSR_OG_TITLE --> - AI Tools Insider">
   <meta property="og:description" content="<!-- SSR_OG_DESC -->">
   <meta property="og:url" content="<!-- SSR_CANONICAL -->">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="<!-- SSR_OG_TITLE -->">
+  <meta name="twitter:title" content="<!-- SSR_OG_TITLE --> - AI Tools Insider">
   <meta property="og:image" content="<!-- SSR_OG_IMAGE -->">
   <meta name="twitter:image" content="<!-- SSR_OG_IMAGE -->">
   <meta name="twitter:description" content="<!-- SSR_OG_DESC -->">
@@ -25,6 +25,7 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=optional"></noscript>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/tool.css">
   <meta name="google-site-verification" content="r4pFlorufSq6sd0fLjcuxarji5jBk8XcaBzNj2oQvjk">
   <meta name="google-adsense-account" content="ca-pub-8856252621654174">
   <script>
@@ -34,26 +35,27 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
 </head>
 <body>
 
-<header class="header">
-  <div class="header-inner">
-    <a href="/" class="logo">AI <span>Tools</span> Insider</a>
-    <div class="search-bar">
-      <form id="searchForm" action="/" method="GET" role="search">
-        <input type="text" id="searchInput" name="s" placeholder="Search AI tools..." autocomplete="off">
-      </form>
+<header class="top-bar">
+  <div class="top-bar-inner">
+    <a href="/" class="site-logo">AI <span>Tools</span> Insider</a>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search AI tools..." autocomplete="off" onkeydown="if(event.key==='Enter'&&this.value.trim())window.location='/?s='+encodeURIComponent(this.value.trim())">
     </div>
-    <nav>
-      <ul class="nav" id="categoryNav">
-        <li><a href="/">Home</a></li>
-      </ul>
+    <nav class="top-nav">
+      <a href="/" class="nav-item">Home</a>
+      <a href="/?category=writing" class="nav-item">Writing</a>
+      <a href="/?category=image" class="nav-item">Image</a>
+      <a href="/?category=coding" class="nav-item">Coding</a>
+      <a href="/?category=video" class="nav-item">Video</a>
+      <a href="/?category=productivity" class="nav-item">Productivity</a>
     </nav>
-    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <button class="menu-btn" onclick="document.querySelector('.top-nav').classList.toggle('open')">☰</button>
   </div>
 </header>
 
 <div class="progress-bar" id="progressBar"></div>
 
-<main class="container article-page">
+<main class="article-page">
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a>
     <span class="sep">/</span>
@@ -67,13 +69,14 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
       <div class="article-header">
         <div id="articleTags"></div>
         <h1 id="articleTitle"></h1>
-        <div class="article-meta">
-          <span id="articleCategory"></span>
-          <span class="dot"></span>
-          <span id="articleReadTime"></span>
-          <span class="dot"></span>
-          <span id="articleDate"></span>
-          <span id="articleRating" class="rating"></span>
+        <div class="tool-meta-row" id="toolMetaRow">
+          <span class="tool-meta-item" id="toolRatingDisplay"><strong>Rating:</strong> <span id="articleRating"></span></span>
+          <span class="tool-meta-item" id="toolPricingDisplay"><strong>Pricing:</strong> <span id="toolPricing"></span></span>
+          <span class="tool-meta-item"><strong>Category:</strong> <span id="articleCategory"></span></span>
+          <span class="tool-meta-item"><strong>Updated:</strong> <span id="articleDate"></span></span>
+        </div>
+        <div class="tool-cta-section" id="toolCtaSection">
+          <a id="toolWebsiteUrl" class="tool-cta-button" target="_blank" rel="nofollow sponsored">Visit Official Website →</a>
         </div>
       </div>
       <div class="article-body" id="articleBody"></div>
@@ -81,36 +84,42 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
 
     <aside class="sidebar">
       <div class="sidebar-section">
-        <h3>Related Articles</h3>
+        <h3>Related Tools</h3>
         <ul class="sidebar-links" id="relatedArticles"></ul>
       </div>
     </aside>
   </div>
 </main>
 
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <h3>AI Tools Insider</h3>
-      <p>Honest, in-depth reviews and comparisons of the best AI tools. We help you find the right tool for your workflow.</p>
+<footer class="footer-alt">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>AI <span>Tools</span> Insider</h3>
+        <p>Your guide to the best AI tools. Test, compare, and find the right tool for your workflow.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Categories</h4>
+        <ul>
+          <li><a href="/?category=writing">✍️ Writing</a></li>
+          <li><a href="/?category=image">🎨 Image</a></li>
+          <li><a href="/?category=coding">💻 Coding</a></li>
+          <li><a href="/?category=video">🎬 Video</a></li>
+          <li><a href="/?category=productivity">⚡ Productivity</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about.html">About</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/privacy.html">Privacy</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="footer-links">
-      <h4>Categories</h4>
-      <ul id="footerCategories">
-        <li><a href="/">Home</a></li>
-      </ul>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AI Tools Insider. When you purchase through links on our site, we may earn an affiliate commission.</p>
     </div>
-    <div class="footer-links">
-      <h4>Company</h4>
-      <ul>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/contact.html">Contact</a></li>
-        <li><a href="/privacy.html">Privacy Policy</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p>&copy; 2026 AI Tools Insider. All rights reserved.</p>
   </div>
 </footer>
 

@@ -1,0 +1,226 @@
+/* ===== TOOL-SPECIFIC STYLES ===== */
+
+/* Tool card enhancements */
+.article-card-image .card-tool-icon {
+  font-size: 32px;
+  opacity: 0.9;
+  color: #fff;
+}
+
+.article-card-body .tool-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.article-card-body .tool-rating .stars {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.article-card-body .tool-rating .stars svg {
+  width: 13px;
+  height: 13px;
+}
+
+.article-card-body .tool-price-tag {
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* Tool detail page */
+.tool-cta-section {
+  text-align: center;
+  margin: 24px 0;
+}
+
+.tool-cta-button {
+  display: inline-block;
+  padding: 14px 36px;
+  background: linear-gradient(135deg, #059669, #047857);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 30px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(5,150,105,0.35);
+}
+
+.tool-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(5,150,105,0.45);
+  text-decoration: none;
+  color: #fff;
+}
+
+.tool-overview {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: var(--bg-light);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary);
+}
+
+.tool-section {
+  margin-bottom: 28px;
+}
+
+.tool-section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.tool-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.tool-section p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.tool-features {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+
+.tool-features li {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #f8faff;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary);
+  font-size: 14px;
+  color: var(--text-secondary);
+  list-style: none !important;
+}
+
+.tool-features li::before {
+  content: "✓";
+  color: var(--primary);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.pros-cons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.pros-cons .pros,
+.pros-cons .cons {
+  padding: 20px;
+  border-radius: var(--radius-md);
+}
+
+.pros-cons .pros {
+  background: var(--green-bg);
+}
+
+.pros-cons .cons {
+  background: #fef2f2;
+}
+
+.pros-cons .pros h3 {
+  color: var(--green);
+}
+
+.pros-cons .cons h3 {
+  color: #dc2626;
+}
+
+.pros-cons ul {
+  padding-left: 16px !important;
+  margin-bottom: 0 !important;
+}
+
+.pros-cons li {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  list-style: disc !important;
+}
+
+.tool-pricing-box {
+  display: inline-block;
+  padding: 12px 20px;
+  background: var(--bg-light);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.tool-meta-item strong {
+  color: var(--text);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Category intro */
+.category-intro {
+  padding: 40px 0 24px;
+}
+
+.category-intro h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.category-intro p {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* Category links in hero */
+.category-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.category-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.12);
+  padding: 8px 20px;
+  border-radius: 25px;
+  transition: all 0.2s;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.category-link:hover {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+  text-decoration: none;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.tool-content ul li {
+  list-style: disc;
+  margin-left: 20px;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 640px) {
+  .pros-cons { grid-template-columns: 1fr; }
+}

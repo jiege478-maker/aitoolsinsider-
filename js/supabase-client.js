@@ -1,3 +1,4 @@
+// supabase-client.js — AI Tools Directory Supabase client
 const SUPABASE_URL = 'https://hgnphmvjijvhgrjnepno.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnbnBobXZqaWp2aGdyam5lcG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MTM1ODYsImV4cCI6MjA5NTM4OTU4Nn0._it7-0Izx-FW6SYvTNvz20v56J7USqmXVOWrEaIStps';
 
@@ -20,7 +21,7 @@ async function sbFetch(path, options) {
   return res;
 }
 
-// ---- Auth ----
+// ---- Auth (admin) ----
 async function sbLogin(email, password) {
   const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
     method: 'POST',
@@ -35,17 +36,10 @@ async function sbGetSession() {
   const accessToken = localStorage.getItem('sb-access-token');
   const refreshToken = localStorage.getItem('sb-refresh-token');
   if (!accessToken) return null;
-
-  // Check if token is still valid by fetching user
   const res = await fetch(SUPABASE_URL + '/auth/v1/user', {
     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + accessToken }
   });
-  if (res.ok) {
-    const user = await res.json();
-    return { user };
-  }
-
-  // Try refresh
+  if (res.ok) { const user = await res.json(); return { user }; }
   if (!refreshToken) return null;
   try {
     const refreshRes = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
@@ -79,17 +73,21 @@ async function fetchCategories() {
   return res.json();
 }
 
-// ---- Articles ----
+// ---- Articles (tools) ----
 async function fetchPublishedArticles(categorySlug) {
-  // Explicit column list — exclude `content` to keep response small
-  let url = '/rest/v1/articles?select=id,title,slug,description,category_id,read_time,rating,featured,created_at,tags,image_url,categories(name,slug)&published=eq.true&order=created_at.desc';
+  let url = '/rest/v1/articles?select=id,title,slug,description,category_id,read_time,rating,featured,created_at,tags,image_url,categories(name,slug)&published=eq.true&order=rating.desc';
   if (categorySlug) {
-    // Map slug to category_id (Supabase REST API can't filter parent by nested column)
     const slugToId = { writing: 1, image: 2, coding: 3, video: 4, productivity: 5 };
     const catId = slugToId[categorySlug];
     if (catId) url += '&category_id=eq.' + catId;
   }
   const res = await sbFetch(url);
+  return res.json();
+}
+
+async function fetchTopRated(limit) {
+  limit = limit || 9;
+  const res = await sbFetch('/rest/v1/articles?select=id,title,slug,description,category_id,read_time,rating,featured,created_at,tags,image_url,categories(name,slug)&published=eq.true&order=rating.desc&limit=' + limit);
   return res.json();
 }
 
@@ -105,8 +103,13 @@ async function fetchRelatedArticles(categoryId, excludeSlug, limit) {
   return res.json();
 }
 
-async function fetchFeaturedArticles() {
-  const res = await sbFetch('/rest/v1/articles?select=id,title,slug,description,category_id,read_time,rating,featured,created_at,tags,image_url,categories(name,slug)&featured=eq.true&published=eq.true&order=created_at.desc&limit=6');
+async function fetchArticlesByCategory(categorySlug, limit) {
+  const slugToId = { writing: 1, image: 2, coding: 3, video: 4, productivity: 5 };
+  const catId = slugToId[categorySlug];
+  if (!catId) return [];
+  var url = '/rest/v1/articles?select=id,title,slug,description,category_id,read_time,rating,created_at,tags,image_url,categories(name,slug)&category_id=eq.' + catId + '&published=eq.true&order=rating.desc';
+  if (limit) url += '&limit=' + limit;
+  const res = await sbFetch(url);
   return res.json();
 }
 
@@ -139,18 +142,12 @@ async function fetchAllArticles() {
 }
 
 async function createArticle(data) {
-  const res = await adminFetch('/rest/v1/articles', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
+  const res = await adminFetch('/rest/v1/articles', { method: 'POST', body: JSON.stringify(data) });
   return res.json();
 }
 
 async function updateArticle(id, data) {
-  const res = await adminFetch('/rest/v1/articles?id=eq.' + id, {
-    method: 'PATCH',
-    body: JSON.stringify(data)
-  });
+  const res = await adminFetch('/rest/v1/articles?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) });
   return res.json();
 }
 

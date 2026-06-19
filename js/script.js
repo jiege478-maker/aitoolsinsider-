@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async function() {
-  // ===== Shared: Mobile nav toggle =====
+  // ===== Shared Utilities =====
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('.nav');
   if (toggle && nav) {
@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
 
-  // ===== Shared: Scroll to top =====
   const scrollBtn = document.querySelector('.scroll-top');
   if (scrollBtn) {
     window.addEventListener('scroll', function() {
@@ -20,7 +19,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
 
-  // ===== Shared: Reading progress bar =====
   const progressBar = document.getElementById('progressBar');
   if (progressBar) {
     window.addEventListener('scroll', function() {
@@ -29,7 +27,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
 
-  // ===== Render star rating =====
   function renderStars(rating) {
     if (!rating || rating === 0) return '';
     const full = Math.floor(rating);
@@ -42,61 +39,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     return html;
   }
 
-  // ===== Render article card =====
-  function createArticleCard(article, featured) {
-    const categoryName = article.categories?.name || 'General';
-    const categorySlug = article.categories?.slug || 'general';
-    const excerpt = article.description || '';
-    const rating = parseFloat(article.rating) || 0;
-
-    const imageGradients = [
-      'linear-gradient(135deg, #0056D2, #002856)',
-      'linear-gradient(135deg, #059669, #002856)',
-      'linear-gradient(135deg, #7c3aed, #002856)',
-      'linear-gradient(135deg, #d97706, #002856)',
-      'linear-gradient(135deg, #dc2626, #002856)',
-      'linear-gradient(135deg, #0891b2, #002856)'
-    ];
-    const gradientIndex = article.id % imageGradients.length;
-
-    if (featured) {
-      return `
-        <div class="featured-card">
-          <div class="featured-card-image" style="background:${imageGradients[gradientIndex]}">
-            <span class="category-badge">${escHtml(categoryName)}</span>
-          </div>
-          <div class="featured-card-body">
-            <h3><a href="/article/${escHtml(article.slug)}">${truncate(escHtml(article.title), 70)}</a></h3>
-            <div class="excerpt">${escHtml(excerpt)}</div>
-            <div class="featured-card-meta">
-              <span class="rating">${renderStars(rating)}</span>
-              <span>${article.read_time || 5} min read</span>
-            </div>
-          </div>
-        </div>`;
-    }
-
-    return `
-      <div class="article-card">
-        <div class="article-card-image" style="background:${imageGradients[gradientIndex]}">
-          <span class="category-badge">${escHtml(categoryName)}</span>
-        </div>
-        <div class="article-card-body">
-          <h3><a href="/article/${escHtml(article.slug)}">${escHtml(article.title)}</a></h3>
-          <div class="excerpt">${escHtml(excerpt)}</div>
-          <div class="article-card-meta">
-            <span class="rating">${renderStars(rating)}</span>
-            <span>${article.read_time || 5} min read</span>
-          </div>
-        </div>
-      </div>`;
-  }
-
   function escHtml(str) {
     if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
   }
 
   function truncate(str, len) {
@@ -104,187 +51,122 @@ document.addEventListener('DOMContentLoaded', async function() {
     return str.substring(0, len) + '...';
   }
 
-  // ===== Render category section with horizontal scroll =====
-  function createCategorySection(category, articles) {
-    if (!articles || articles.length === 0) return '';
-    const slug = category.slug === 'general' ? '' : category.slug;
-    const cards = articles.map(a => createArticleCard(a, false)).join('');
-    return `
-      <section class="section scroll-section">
-        <div class="container">
-          <div class="section-header">
-            <h2>${escHtml(category.name)}</h2>
-            <a href="/?category=${escHtml(slug)}" class="view-all">View All</a>
-          </div>
-          <div class="scroll-row">${cards}</div>
-        </div>
-      </section>`;
-  }
-
-  // ===== HOMEPAGE LOGIC =====
-  const allArticlesGrid = document.getElementById('allArticlesGrid');
-  const articleCount = document.getElementById('articleCount');
-  const noResults = document.getElementById('noResults');
-  const searchInput = document.getElementById('searchInput');
-
-  // Search data — accessible on all pages
-  let allArticles = [];
-
-  // Pagination state
-  var pageSize = 12;
-  var currentPage = 0;
-
-  function renderPage() {
-    if (!allArticlesGrid) return;
-    var term = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    var filtered = term ? allArticles.filter(function(a) {
-      return a.title.toLowerCase().includes(term) ||
-        (a.description && a.description.toLowerCase().includes(term)) ||
-        (a.tags && a.tags.some(function(t) { return t.toLowerCase().includes(term); }));
-    }) : allArticles;
-
-    if (filtered.length === 0) {
-      allArticlesGrid.innerHTML = '';
-      if (noResults) noResults.style.display = 'block';
-      if (articleCount) articleCount.textContent = term ? '0 results for "' + term + '"' : '0 articles';
-      document.getElementById('prevPageBtn').style.display = 'none';
-      document.getElementById('nextPageBtn').style.display = 'none';
-      document.getElementById('pageIndicator').textContent = '';
-      return;
-    }
-    if (noResults) noResults.style.display = 'none';
-
-    // Remove duplicates
-    var seen = {};
-    var unique = [];
-    for (var i = 0; i < filtered.length; i++) {
-      if (!seen[filtered[i].id]) {
-        seen[filtered[i].id] = true;
-        unique.push(filtered[i]);
-      }
-    }
-
-    var totalPages = Math.ceil(unique.length / pageSize);
-    if (currentPage >= totalPages) currentPage = totalPages - 1;
-    if (currentPage < 0) currentPage = 0;
-
-    var start = currentPage * pageSize;
-    var pageItems = unique.slice(start, start + pageSize);
-
-    if (articleCount) {
-      articleCount.textContent = term
-        ? unique.length + ' results for "' + term + '"'
-        : unique.length + ' articles';
-    }
-
-    allArticlesGrid.innerHTML = pageItems.map(function(a) { return createArticleCard(a, false); }).join('');
-
-    // Pagination controls
-    var prevBtn = document.getElementById('prevPageBtn');
-    var nextBtn = document.getElementById('nextPageBtn');
-    var indicator = document.getElementById('pageIndicator');
-
-    if (totalPages <= 1) {
-      prevBtn.style.display = 'none';
-      nextBtn.style.display = 'none';
-      indicator.textContent = '';
-    } else {
-      prevBtn.style.display = '';
-      nextBtn.style.display = '';
-      indicator.textContent = 'Page ' + (currentPage + 1) + ' of ' + totalPages;
-      prevBtn.disabled = currentPage <= 0;
-      nextBtn.disabled = currentPage >= totalPages - 1;
-    }
-  }
-
-  window.changePage = function(delta) {
-    currentPage += delta;
-    renderPage();
-    // Scroll to grid
-    if (allArticlesGrid) allArticlesGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const catEmoji = { writing: '✍️', image: '🎨', coding: '💻', video: '🎬', productivity: '⚡' };
+  const catGradients = {
+    writing: 'linear-gradient(135deg, #0056D2, #002856)',
+    image: 'linear-gradient(135deg, #7c3aed, #002856)',
+    coding: 'linear-gradient(135deg, #059669, #002856)',
+    video: 'linear-gradient(135deg, #d97706, #002856)',
+    productivity: 'linear-gradient(135deg, #0891b2, #002856)',
   };
 
-  function applySearchFilter() {
-    currentPage = 0;
-    renderPage();
+  function createToolCard(tool) {
+    const catName = tool.categories?.name || 'General';
+    const catSlug = tool.categories?.slug || 'general';
+    const rating = parseFloat(tool.rating) || 0;
+    const grad = catGradients[catSlug] || catGradients.writing;
+    return '<div class="article-card">' +
+      '<div class="article-card-image" style="background:' + grad + '">' +
+        '<span class="category-badge">' + escHtml(catName) + '</span>' +
+      '</div>' +
+      '<div class="article-card-body">' +
+        '<div class="tool-rating">' +
+          '<span class="stars">' + renderStars(rating) + '</span> ' + rating.toFixed(1) +
+        '</div>' +
+        '<h3><a href="/article/' + escHtml(tool.slug) + '">' + escHtml(tool.title) + '</a></h3>' +
+        '<div class="excerpt">' + escHtml(tool.description || '') + '</div>' +
+        '<div class="article-card-meta">' +
+          '<span class="rating">' + renderStars(rating) + '</span>' +
+          '<span>' + (catEmoji[catSlug] || '') + ' ' + escHtml(catName) + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }
 
-  // Delegate on document — catches events regardless of DOM replacements
-  document.addEventListener('input', function(e) {
-    if (e.target && e.target.id === 'searchInput') {
-      applySearchFilter();
-    }
-  });
-  document.addEventListener('keyup', function(e) {
-    if (e.target && e.target.id === 'searchInput' && !!document.getElementById('allArticlesGrid')) {
-      applySearchFilter();
-    }
-  });
-  // Intercept form submit on homepage only
-  document.addEventListener('submit', function(e) {
-    if (e.target && e.target.id === 'searchForm') {
-      if (document.getElementById('allArticlesGrid')) {
-        e.preventDefault();
-        applySearchFilter();
-      }
-    }
-  });
+  // ===== HOMEPAGE =====
+  const topToolsGrid = document.getElementById('topToolsGrid');
+  const categorySections = document.getElementById('categorySections');
+  const categoryLinks = document.getElementById('categoryLinks');
+  const heroSearch = document.getElementById('heroSearchInput');
+  const searchInput = document.getElementById('searchInput');
 
-  if (allArticlesGrid) {
-    // Homepage — load data
-    var currentFilterCategory = null;
-
+  if (topToolsGrid || categorySections) {
+    // Homepage
     try {
-      // Parse URL filter
-      var urlParams = new URLSearchParams(window.location.search);
-      currentFilterCategory = urlParams.get('category') || null;
-
-      // Set active nav
-      if (currentFilterCategory) {
-        document.querySelectorAll('.nav a').forEach(function(link) {
-          var filter = link.getAttribute('data-filter');
-          if (filter === currentFilterCategory) {
-            document.querySelectorAll('.nav a').forEach(function(l) { l.classList.remove('active'); });
-            link.classList.add('active');
-          }
-        });
-      }
-
-      // Fetch articles & categories (for nav)
-      allArticles = await fetchPublishedArticles(currentFilterCategory);
+      // Fetch all data
       var cats = await fetchCategories();
+
+      // Load nav
       var catNav = document.getElementById('categoryNav');
-      if (catNav && !currentFilterCategory) {
-        // Only update nav on article page
+      if (catNav) {
+        var html = '<li><a href="/">Home</a></li>';
+        cats.forEach(function(c) { html += '<li><a href="/?category=' + escHtml(c.slug) + '">' + escHtml(c.name) + '</a></li>'; });
+        catNav.innerHTML = html;
       }
 
-      // Render with pagination
-      currentPage = 0;
-      renderPage();
-
-      // URL search query on page load (e.g. from article page search)
-      var searchQuery = urlParams.get('s');
-      if (searchQuery && searchInput) {
-        searchInput.value = searchQuery;
-        applySearchFilter();
+      // Footer categories
+      var footerCats = document.getElementById('footerCategories');
+      if (footerCats) {
+        var fhtml = '<li><a href="/">Home</a></li>';
+        cats.forEach(function(c) { fhtml += '<li><a href="/?category=' + escHtml(c.slug) + '">' + escHtml(c.name) + '</a></li>'; });
+        footerCats.innerHTML = fhtml;
       }
 
-      // Re-apply search filter if user typed before data loaded
-      if (searchInput && searchInput.value.trim()) {
-        applySearchFilter();
+      // Category links in hero
+      if (categoryLinks) {
+        var lhtml = '';
+        cats.forEach(function(c) {
+          lhtml += '<a href="/?category=' + escHtml(c.slug) + '" class="category-link">' + (catEmoji[c.slug] || '') + ' ' + escHtml(c.name) + '</a>';
+        });
+        categoryLinks.innerHTML = lhtml;
+      }
+
+      // Top rated tools
+      if (topToolsGrid) {
+        var topTools = await fetchTopRated(9);
+        if (topTools && topTools.length > 0) {
+          topToolsGrid.innerHTML = topTools.map(createToolCard).join('');
+        } else {
+          topToolsGrid.innerHTML = '<div class="no-results">No tools found yet. Check back soon.</div>';
+        }
+      }
+
+      // Category sections
+      if (categorySections) {
+        var allHtml = '';
+        for (var i = 0; i < cats.length; i++) {
+          var c = cats[i];
+          var tools = await fetchArticlesByCategory(c.slug, 6);
+          if (tools && tools.length > 0) {
+            allHtml += '<section class="section scroll-section">' +
+              '<div class="section-header">' +
+                '<h2>' + escHtml(c.name) + '</h2>' +
+                '<a href="/?category=' + escHtml(c.slug) + '" class="view-all">View All</a>' +
+              '</div>' +
+              '<div class="scroll-row">' + tools.map(createToolCard).join('') + '</div>' +
+            '</section>';
+          }
+        }
+        categorySections.innerHTML = allHtml || '<div class="no-results">No tools found.</div>';
       }
     } catch (e) {
-      console.error('Failed to load data:', e);
-      if (allArticlesGrid) {
-        allArticlesGrid.innerHTML = '<div class="no-results">Failed to load articles. Please check your Supabase configuration in /js/supabase-client.js</div>';
-      }
+      console.error('Homepage error:', e);
+      if (topToolsGrid) topToolsGrid.innerHTML = '<div class="no-results">Failed to load tools. Please try again later.</div>';
     }
   }
 
-  // ===== ARTICLE PAGE LOGIC =====
+  // Hero search on homepage
+  if (heroSearch) {
+    heroSearch.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && heroSearch.value.trim()) {
+        window.location.href = '/?s=' + encodeURIComponent(heroSearch.value.trim());
+      }
+    });
+  }
+
+  // ===== ARTICLE PAGE =====
   const articleTitle = document.getElementById('articleTitle');
   if (articleTitle) {
-    // We're on the article page — check for SSR-embedded data first
     const ssrScript = document.getElementById('ssrArticleData');
     let article = null;
     let slug = null;
@@ -295,72 +177,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     if (!article) {
-      // Client-side: parse slug from URL
       const urlParams = new URLSearchParams(window.location.search);
       slug = urlParams.get('slug');
       if (!slug) {
-        // Check clean URL format: /article/some-slug
         const pathMatch = window.location.pathname.match(/^\/article\/(.+)$/);
         if (pathMatch) slug = decodeURIComponent(pathMatch[1]);
       }
     }
 
     if (!slug) {
-      articleTitle.textContent = 'Article not found';
-      document.getElementById('articleBody').innerHTML = '<p>The article you\'re looking for does not exist.</p>';
+      articleTitle.textContent = 'Tool not found';
+      document.getElementById('articleBody').innerHTML = '<p>The tool you\'re looking for does not exist.</p>';
     } else {
       try {
         if (!article) article = await fetchArticleBySlug(slug);
         if (!article) {
-          articleTitle.textContent = 'Article not found';
-          document.getElementById('articleBody').innerHTML = '<p>The article you\'re looking for does not exist.</p>';
+          articleTitle.textContent = 'Tool not found';
+          document.getElementById('articleBody').innerHTML = '<p>The tool you\'re looking for does not exist.</p>';
         } else {
-          // Update page title and meta
+          // Update page meta
           document.title = article.title + ' - AI Tools Insider';
-          document.querySelector('meta[name="description"]').content = article.description || '';
-          document.querySelector('link[rel="canonical"]').href = 'https://www.toolrankly.com/article/' + encodeURIComponent(slug);
-          document.querySelector('meta[property="og:title"]').content = article.title;
-          document.querySelector('meta[property="og:description"]').content = article.description || '';
-          document.querySelector('meta[property="og:url"]').content = 'https://www.toolrankly.com/article/' + encodeURIComponent(slug);
-          document.querySelector('meta[name="twitter:title"]').content = article.title;
-          document.querySelector('meta[name="twitter:description"]').content = article.description || '';
+          var metaDesc = document.querySelector('meta[name="description"]');
+          if (metaDesc) metaDesc.content = article.description || '';
 
-          // Schema — build fresh on client side (SSR already has it correct)
-          const schemaScript = document.getElementById('schemaArticle');
-          if (schemaScript) {
-            const schema = {
-              '@context': 'https://schema.org',
-              '@type': 'Article',
-              headline: article.title,
-              description: article.description || '',
-              image: article.image_url || 'https://www.toolrankly.com/images/default-og.png',
-              datePublished: article.created_at,
-              dateModified: article.updated_at || article.created_at,
-              author: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://www.toolrankly.com' },
-              publisher: { '@type': 'Organization', name: 'AI Tools Insider', url: 'https://www.toolrankly.com' }
-            };
-            schemaScript.textContent = JSON.stringify(schema);
-          }
-
-          // Render article
+          // Category & tags
           const categoryName = article.categories?.name || 'General';
-          const rating = parseFloat(article.rating) || 0;
 
-          // Tags
-          const tagsDiv = document.getElementById('articleTags');
-          if (tagsDiv) {
-            const tagTypes = ['tutorial', 'how-to', 'guide'];
-            const tagType = tagTypes[article.category_id % tagTypes.length];
-            tagsDiv.innerHTML = `<span class="tag tag--${tagType}">${escHtml(categoryName)}</span>`;
-          }
-
+          document.getElementById('articleTags').innerHTML = '<span class="tag tag--guide">' + escHtml(categoryName) + '</span>';
           articleTitle.textContent = article.title;
 
           const categoryEl = document.getElementById('articleCategory');
           if (categoryEl) categoryEl.textContent = categoryName;
-
-          const readTimeEl = document.getElementById('articleReadTime');
-          if (readTimeEl) readTimeEl.textContent = (article.read_time || 5) + ' min read';
 
           const dateEl = document.getElementById('articleDate');
           if (dateEl) {
@@ -368,17 +215,31 @@ document.addEventListener('DOMContentLoaded', async function() {
             dateEl.textContent = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
           }
 
+          // Rating
+          const ratingVal = parseFloat(article.rating) || 0;
           const ratingEl = document.getElementById('articleRating');
-          if (ratingEl) {
-            if (rating > 0) {
-              ratingEl.innerHTML = renderStars(rating) + ' ' + rating.toFixed(1);
+          if (ratingEl && ratingVal > 0) {
+            ratingEl.innerHTML = renderStars(ratingVal) + ' ' + ratingVal.toFixed(1);
+          }
+
+          // Pricing — extract from content (first <p> after pricing section)
+          const pricingEl = document.getElementById('toolPricing');
+          if (pricingEl) {
+            var pricingMatch = article.content && article.content.match(/<p[^>]*>([^<]*(?:Free|$\d+|mo|month)[^<]*)<\/p>/i);
+            if (pricingMatch) {
+              pricingEl.textContent = pricingMatch[1];
+            } else {
+              document.getElementById('toolPricingDisplay').style.display = 'none';
             }
           }
 
-          const bodyEl = document.getElementById('articleBody');
-          if (bodyEl) bodyEl.innerHTML = article.content || '<p>No content available.</p>';
+          // Website URL
+          var wsMatch = article.content && article.content.match(/href="(https?:\/\/[^"]+)"/);
+          var wsUrl = wsMatch ? wsMatch[1] : '#';
+          var wsLink = document.getElementById('toolWebsiteUrl');
+          if (wsLink) wsLink.href = wsUrl;
 
-          // Breadcrumb category
+          // Breadcrumb
           const breadcrumbCat = document.getElementById('breadcrumbCategory');
           if (breadcrumbCat) {
             breadcrumbCat.textContent = categoryName;
@@ -387,41 +248,51 @@ document.addEventListener('DOMContentLoaded', async function() {
           const breadcrumbTitle = document.getElementById('breadcrumbTitle');
           if (breadcrumbTitle) breadcrumbTitle.textContent = article.title;
 
-          // Related articles
+          // Body
+          const bodyEl = document.getElementById('articleBody');
+          if (bodyEl) bodyEl.innerHTML = article.content || '<p>No information available.</p>';
+
+          // Related
           const relatedContainer = document.getElementById('relatedArticles');
           if (relatedContainer) {
-            const related = await fetchRelatedArticles(article.category_id, slug, 4);
+            const related = await fetchRelatedArticles(article.category_id, slug, 6);
             if (related.length > 0) {
-              relatedContainer.innerHTML = related.map(r => {
+              relatedContainer.innerHTML = related.map(function(r) {
                 var t = escHtml(r.title);
                 t = t.length > 45 ? t.substring(0, 42) + '...' : t;
                 return '<li><a href="/article/' + escHtml(r.slug) + '">' + t + '</a></li>';
               }).join('');
             } else {
-              relatedContainer.innerHTML = '<li style="color:var(--text-muted);font-size:13px;">No related articles yet.</li>';
+              relatedContainer.innerHTML = '<li style="color:var(--text-muted);font-size:13px;">No related tools yet.</li>';
             }
           }
 
-          // Load categories in nav
+          // Load nav
           const cats = await fetchCategories();
           const catNav = document.getElementById('categoryNav');
           if (catNav) {
-            let html = '<li><a href="/">Home</a></li>';
-            cats.forEach(c => {
-              html += '<li><a href="/?category=' + escHtml(c.slug) + '">' + escHtml(c.name) + '</a></li>';
-            });
-            catNav.innerHTML = html;
+            let h = '<li><a href="/">Home</a></li>';
+            cats.forEach(function(c) { h += '<li><a href="/?category=' + escHtml(c.slug) + '">' + escHtml(c.name) + '</a></li>'; });
+            catNav.innerHTML = h;
+          }
+
+          // Footer categories
+          var footerCats = document.getElementById('footerCategories');
+          if (footerCats) {
+            var fh = '<li><a href="/">Home</a></li>';
+            cats.forEach(function(c) { fh += '<li><a href="/?category=' + escHtml(c.slug) + '">' + escHtml(c.name) + '</a></li>'; });
+            footerCats.innerHTML = fh;
           }
         }
       } catch (e) {
-        console.error('Failed to load article:', e);
-        articleTitle.textContent = 'Error loading article';
-        document.getElementById('articleBody').innerHTML = '<p>Failed to load the article. Please try again later.</p>';
+        console.error('Failed to load tool:', e);
+        articleTitle.textContent = 'Error loading tool';
+        document.getElementById('articleBody').innerHTML = '<p>Failed to load the tool. Please try again later.</p>';
       }
     }
   }
 
-  // ===== Active nav link =====
+  // ===== Active nav =====
   const currentPath = window.location.pathname;
   document.querySelectorAll('.nav a').forEach(function(link) {
     const href = link.getAttribute('href');

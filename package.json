@@ -1,24 +1,17 @@
 {
   "name": "aitoolsinsider.com",
-  "version": "1.0.0",
-  "description": "",
-  "main": "generate-articles-ai.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "version": "2.0.0",
+  "description": "AI Tools Insider - Honest AI tool reviews",
+  "main": "",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jiege478-maker/aitoolsinsider-.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/jiege478-maker/aitoolsinsider-/issues"
   },
-  "homepage": "https://github.com/jiege478-maker/aitoolsinsider-#readme",
-  "dependencies": {
-    "playwright": "^1.60.0"
-  }
+  "homepage": "https://www.toolrankly.com"
 }
